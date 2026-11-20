@@ -1,7 +1,7 @@
 const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
-const { getOutputText } = require("./src/openai-response.cjs");
+const { getOutputText, getRoutineInstructions } = require("./src/openai-response.cjs");
 
 const port = Number(process.env.PORT || 4173);
 const root = __dirname;
@@ -61,8 +61,7 @@ async function generateRoutine(products, conversation) {
     body: JSON.stringify({
       model: process.env.OPENAI_MODEL || "gpt-4o-mini",
       tools: [{ type: "web_search_preview" }],
-      instructions:
-        `You are a skincare routine advisor. Create a safe, practical personalized routine using only the products supplied by the user. Explain the morning and evening order, use concise clear steps, and state where a product is not appropriate for a certain time of day. Include sunscreen in the morning if it is among the selected products. Do not invent products or ingredients. Add a brief reminder to patch-test and stop use if irritation occurs.\n\nUse current, real-world skincare guidance and product facts. Search the web when relevant, and cite or link every substantial claim that depends on current information or official product guidance.\n\nSelected products:\n${JSON.stringify(selectedProducts, null, 2)}`,
+      instructions: getRoutineInstructions(selectedProducts),
       input,
     }),
   });

@@ -121,9 +121,9 @@ const translations = {
     noResults: "No matching products found.", selectedProducts: "Your selected products",
     generateRoutine: "Generate my routine", yourPlan: "YOUR PERSONALIZED PLAN", yourRoutine: "Your routine",
     followUpLabel: "Ask a follow-up question", followUpPlaceholder: "Ask a follow-up...",
-    send: "Send", beautyLabel: "LOREAL BEAUTY", assistantTitle: "Skincare Assistant",
-    assistantGreeting: "Hi! Ask me about skincare or your selected routine.",
-    assistantLabel: "Ask the skincare assistant", assistantPlaceholder: "Ask a question...",
+    send: "Send", beautyLabel: "LOREAL BEAUTY", assistantTitle: "Beauty Routine Assistant",
+    assistantGreeting: "Hi! Ask me about skincare, haircare, makeup, or your selected routine.",
+    assistantLabel: "Ask the beauty assistant", assistantPlaceholder: "Ask a question...",
     chat: "Chat", sources: "Sources", thinking: "Thinking...", generating: "Generating...",
     selectedCount: (count) => `${count} selected`, noSelected: "No products selected",
     senderYou: "You", senderAssistant: "Assistant",
@@ -136,9 +136,9 @@ const translations = {
     noResults: "No se encontraron productos.", selectedProducts: "Tus productos seleccionados",
     generateRoutine: "Crear mi rutina", yourPlan: "TU PLAN PERSONALIZADO", yourRoutine: "Tu rutina",
     followUpLabel: "Haz una pregunta de seguimiento", followUpPlaceholder: "Haz una pregunta...",
-    send: "Enviar", beautyLabel: "LOREAL BEAUTY", assistantTitle: "Asistente de cuidado de la piel",
-    assistantGreeting: "¡Hola! Pregúntame sobre el cuidado de la piel o tu rutina seleccionada.",
-    assistantLabel: "Pregunta al asistente", assistantPlaceholder: "Haz una pregunta...",
+    send: "Enviar", beautyLabel: "LOREAL BEAUTY", assistantTitle: "Asistente de rutinas de belleza",
+    assistantGreeting: "¡Hola! Pregúntame sobre el cuidado de la piel, el cabello, el maquillaje o tu rutina seleccionada.",
+    assistantLabel: "Pregunta al asistente de belleza", assistantPlaceholder: "Haz una pregunta...",
     chat: "Chat", sources: "Fuentes", thinking: "Pensando...", generating: "Creando...",
     selectedCount: (count) => `${count} seleccionados`, noSelected: "No hay productos seleccionados",
     senderYou: "Tú", senderAssistant: "Asistente",
@@ -151,9 +151,9 @@ const translations = {
     noResults: "未找到匹配的产品。", selectedProducts: "您选择的产品",
     generateRoutine: "生成我的护肤流程", yourPlan: "您的个性化方案", yourRoutine: "您的护肤流程",
     followUpLabel: "提出后续问题", followUpPlaceholder: "提出问题...",
-    send: "发送", beautyLabel: "LOREAL BEAUTY", assistantTitle: "护肤助手",
-    assistantGreeting: "你好！可以询问护肤问题或您选择的护肤流程。",
-    assistantLabel: "询问护肤助手", assistantPlaceholder: "请输入问题...",
+    send: "发送", beautyLabel: "LOREAL BEAUTY", assistantTitle: "美妆流程助手",
+    assistantGreeting: "你好！可以询问护肤、护发、化妆或您选择的流程。",
+    assistantLabel: "询问美妆助手", assistantPlaceholder: "请输入问题...",
     chat: "聊天", sources: "来源", thinking: "正在思考...", generating: "正在生成...",
     selectedCount: (count) => `已选择 ${count} 件`, noSelected: "未选择任何产品",
     senderYou: "你", senderAssistant: "助手",
@@ -166,9 +166,9 @@ const translations = {
     noResults: "Nenhum produto correspondente.", selectedProducts: "Produtos selecionados",
     generateRoutine: "Gerar minha rotina", yourPlan: "SEU PLANO PERSONALIZADO", yourRoutine: "Sua rotina",
     followUpLabel: "Faça uma pergunta complementar", followUpPlaceholder: "Faça uma pergunta...",
-    send: "Enviar", beautyLabel: "LOREAL BEAUTY", assistantTitle: "Assistente de cuidados",
-    assistantGreeting: "Olá! Pergunte sobre cuidados com a pele ou sua rotina selecionada.",
-    assistantLabel: "Pergunte ao assistente", assistantPlaceholder: "Faça uma pergunta...",
+    send: "Enviar", beautyLabel: "LOREAL BEAUTY", assistantTitle: "Assistente de rotinas de beleza",
+    assistantGreeting: "Olá! Pergunte sobre cuidados com a pele, cabelo, maquiagem ou sua rotina selecionada.",
+    assistantLabel: "Pergunte ao assistente de beleza", assistantPlaceholder: "Faça uma pergunta...",
     chat: "Chat", sources: "Fontes", thinking: "Pensando...", generating: "Gerando...",
     selectedCount: (count) => `${count} selecionados`, noSelected: "Nenhum produto selecionado",
     senderYou: "Você", senderAssistant: "Assistente",
@@ -241,7 +241,7 @@ async function readRoutineResponse(response, fallbackMessage) {
     throw new Error(`${fallbackMessage} (invalid JSON response)`);
   }
 
-  let data;
+  let data = {};
   try {
     data = await response.json();
   } catch (error) {
@@ -255,7 +255,9 @@ async function readRoutineResponse(response, fallbackMessage) {
     throw new Error(`${fallbackMessage} (HTTP ${response.status})`);
   }
 
-  if (!data) throw new Error(`${fallbackMessage} (invalid JSON response)`);
+  if (!data || typeof data.routine !== "string" || !data.routine) {
+    throw new Error(`${fallbackMessage} (invalid JSON response)`);
+  }
   return data;
 }
 
@@ -428,7 +430,7 @@ categoryFilters.addEventListener("click", (event) => {
 function setFloatingChatOpen(isOpen) {
   floatingChatPanel.hidden = !isOpen;
   floatingChatToggle.setAttribute("aria-expanded", String(isOpen));
-  floatingChatToggle.setAttribute("aria-label", isOpen ? "Close skincare chat" : "Open skincare chat");
+  floatingChatToggle.setAttribute("aria-label", isOpen ? "Close beauty chat" : "Open beauty chat");
   if (isOpen) floatingChatInput.focus();
 }
 
@@ -489,8 +491,11 @@ floatingChatForm.addEventListener("submit", async (event) => {
     floatingChatMessages.appendChild(assistantTurn);
     floatingConversation.push({ role: "assistant", content: data.routine });
   } catch (error) {
-    loadingMessage.className = "floating-chat-message error";
-    loadingMessage.textContent = error.message;
+    loadingMessage.remove();
+    const errorMessage = document.createElement("p");
+    errorMessage.className = "floating-chat-message error";
+    errorMessage.textContent = error instanceof Error ? error.message : "Unable to answer that question.";
+    floatingChatMessages.appendChild(errorMessage);
   } finally {
     floatingChatMessages.scrollTop = floatingChatMessages.scrollHeight;
   }
@@ -616,8 +621,11 @@ chatForm.addEventListener("submit", async (event) => {
     appendChatResponse(data.routine, data.citations);
     conversation.push({ role: "assistant", content: data.routine });
   } catch (error) {
-    loadingMessage.className = "chat-message error";
-    loadingMessage.textContent = error.message;
+    loadingMessage.remove();
+    const errorMessage = document.createElement("p");
+    errorMessage.className = "chat-message error";
+    errorMessage.textContent = error instanceof Error ? error.message : "Unable to answer that question.";
+    chatMessages.appendChild(errorMessage);
   } finally {
     chatSend.disabled = false;
     chatMessages.scrollTop = chatMessages.scrollHeight;

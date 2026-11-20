@@ -49,6 +49,9 @@ for (const [name, loadHandler] of [
     global.fetch = async (url, options) => {
       assert.equal(url, "https://api.openai.com/v1/responses");
       assert.equal(options.headers.Authorization, "Bearer test-key");
+      const { instructions } = JSON.parse(options.body);
+      assert.match(instructions, /skincare, haircare, makeup/);
+      assert.match(instructions, /L'Oreal Paris and Maybelline/);
       return Response.json(openAiResult);
     };
     let response = await handler(request());
@@ -98,7 +101,12 @@ test("local server returns text from a raw OpenAI response", async () => {
   let server;
   process.env.PORT = "0";
   process.env.OPENAI_API_KEY = "test-key";
-  global.fetch = async () => Response.json(openAiResult);
+  global.fetch = async (_url, options) => {
+    const { instructions } = JSON.parse(options.body);
+    assert.match(instructions, /skincare, haircare, makeup/);
+    assert.match(instructions, /L'Oreal Paris and Maybelline/);
+    return Response.json(openAiResult);
+  };
   http.createServer = (...args) => {
     server = originalCreateServer(...args);
     return server;

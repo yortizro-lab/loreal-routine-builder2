@@ -1,10 +1,10 @@
-import { getOutputText } from "./openai-response.cjs";
+import { getOutputText, getRoutineInstructions } from "./openai-response.cjs";
 
 interface Env {
   ASSETS: {
     fetch(request: Request): Promise<Response>;
   };
-  OPENAI_API_KEY: env.OPENAI_API_KEY;
+  OPENAI_API_KEY: string;
   OPENAI_MODEL?: "gpt-4o-mini";
 }
 
@@ -105,9 +105,7 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
       body: JSON.stringify({
         model: env.OPENAI_MODEL || "gpt-4o-mini",
         tools: [{ type: "web_search_preview" }],
-        instructions:
-          "You are a skincare routine advisor. Create a safe, practical personalized routine using only the products supplied by the user. Explain the morning and evening order, use concise clear steps, and state where a product is not appropriate for a certain time of day. Include sunscreen in the morning if it is among the selected products. Do not invent products or ingredients. Add a brief reminder to patch-test and stop use if irritation occurs.\n\nUse current, real-world skincare guidance and product facts. Search the web when relevant, and cite or link every substantial claim that depends on current information or official product guidance.\n\nSelected products:\n" +
-          JSON.stringify(selectedProducts, null, 2),
+        instructions: getRoutineInstructions(selectedProducts),
         input,
       }),
     });
@@ -142,7 +140,7 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
     if (malformedJson) {
       console.error(`OpenAI API returned malformed JSON: status=${openAiResponse.status} body=${upstreamText.slice(0, 2_000)}`);
       return jsonResponse(502, {
-        error: `OpenAI API returned invalid JSON (HTTP ${openAiResponse.status}): ${upstreamText.slice(0, 1_000)}`,
+        error: `OpenAI API returned invalid JSON (HTTP ${openAiResponse.status}).`,
       });
     }
 
