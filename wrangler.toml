@@ -1,3 +1,7 @@
 name = "lorealroutinebuilder"
 compatibility_date = "2026-11-20"
-pages_build_output_dir = "."
+main = "src/index.ts"
+
+[assets]
+directory = "."
+binding = "ASSETS"
