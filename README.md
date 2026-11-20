@@ -16,10 +16,10 @@ Open `http://127.0.0.1:4173`.
 
 `OPENAI_MODEL` is optional and defaults to `gpt-4o-mini`.
 
-To run the OpenAI response regression tests with Node.js 24:
+To run the routine response regression tests with Node.js 24:
 
 ```bash
-node --test test/openai-connection.test.cjs
+node --test test/openai-connection.test.cjs test/frontend-response.test.cjs
 ```
 
 ## Deploy to Cloudflare

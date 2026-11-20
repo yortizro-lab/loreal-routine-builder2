@@ -233,6 +233,23 @@ function appendChatResponse(routine, citations = []) {
   }
 }
 
+async function readRoutineResponse(response, fallbackMessage) {
+  if (response.ok) return response.json();
+
+  console.error(`Routine request failed with status ${response.status}.`);
+  if (response.headers.get("content-type")?.toLowerCase().includes("application/json")) {
+    let data;
+    try {
+      data = await response.json();
+    } catch (error) {
+      if (!(error instanceof SyntaxError)) throw error;
+      console.error("Unable to parse the routine error response:", error);
+    }
+    if (typeof data?.error === "string" && data.error) throw new Error(data.error);
+  }
+  throw new Error(`${fallbackMessage} (HTTP ${response.status})`);
+}
+
 function loadSelection() {
   try {
     const savedIds = JSON.parse(localStorage.getItem(storageKey) || "[]");
@@ -448,8 +465,7 @@ floatingChatForm.addEventListener("submit", async (event) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ products: selectedProducts, conversation: floatingConversation }),
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Unable to answer that question.");
+    const data = await readRoutineResponse(response, "Unable to answer that question.");
 
     loadingMessage.remove();
     const assistantTurn = document.createElement("div");
@@ -524,10 +540,7 @@ generateButton.addEventListener("click", async () => {
       body: JSON.stringify({ products: selectedProducts, conversation }),
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || "Unable to generate a routine.");
-    }
+    const data = await readRoutineResponse(response, "Unable to generate a routine.");
 
     chatMessages.innerHTML = "";
     appendChatResponse(data.routine, data.citations);
@@ -588,8 +601,7 @@ chatForm.addEventListener("submit", async (event) => {
       body: JSON.stringify({ products: selectedProducts, conversation }),
     });
 
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Unable to answer that question.");
+    const data = await readRoutineResponse(response, "Unable to answer that question.");
 
     loadingMessage.remove();
     appendChatResponse(data.routine, data.citations);
