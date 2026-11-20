@@ -71,10 +71,33 @@ export async function onRequestPost(context) {
       }),
     });
 
-    const data = await openAiResponse.json();
+    const upstreamText = await openAiResponse.text();
+    let data;
+    let malformedJson = false;
+    try {
+      data = JSON.parse(upstreamText);
+    } catch {
+      malformedJson = true;
+      data = { output: [] };
+    }
+
     if (!openAiResponse.ok) {
-      return jsonResponse(openAiResponse.status === 429 ? 429 : 502, {
-        error: data.error?.message || "The OpenAI API request failed.",
+      const upstreamMessage =
+        typeof data.error === "string"
+          ? data.error
+          : data.error?.message || upstreamText.slice(0, 1_000) || "No error details returned";
+      console.error(
+        `OpenAI API error: status=${openAiResponse.status} body=${upstreamText.slice(0, 2_000)}`
+      );
+      return jsonResponse(502, {
+        error: `OpenAI API error (${openAiResponse.status}): ${upstreamMessage}`,
+      });
+    }
+
+    if (malformedJson) {
+      console.error(`OpenAI API returned malformed JSON: status=${openAiResponse.status} body=${upstreamText.slice(0, 2_000)}`);
+      return jsonResponse(502, {
+        error: `OpenAI API returned invalid JSON (HTTP ${openAiResponse.status}): ${upstreamText.slice(0, 1_000)}`,
       });
     }
 

@@ -4,7 +4,7 @@ interface Env {
   ASSETS: {
     fetch(request: Request): Promise<Response>;
   };
-  OPENAI_API_KEY: string;
+  OPENAI_API_KEY: env.OPENAI_API_KEY;
   OPENAI_MODEL?: "gpt-4o-mini";
 }
 
@@ -112,15 +112,37 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
       }),
     });
 
-    const data = await openAiResponse.json() as {
+    const upstreamText = await openAiResponse.text();
+    let data: {
       output_text?: string;
       output?: Array<{ type?: string; content?: Array<{ type?: string; text?: string; annotations?: Array<{ type?: string; url?: string; title?: string }> }> }>;
-      error?: { message?: string };
+      error?: { message?: string } | string;
     };
+    let malformedJson = false;
+    try {
+      data = JSON.parse(upstreamText);
+    } catch {
+      malformedJson = true;
+      data = { output: [] };
+    }
 
     if (!openAiResponse.ok) {
-      return jsonResponse(openAiResponse.status === 429 ? 429 : 502, {
-        error: data.error?.message || "The OpenAI API request failed.",
+      const upstreamMessage =
+        typeof data.error === "string"
+          ? data.error
+          : data.error?.message || upstreamText.slice(0, 1_000) || "No error details returned";
+      console.error(
+        `OpenAI API error: status=${openAiResponse.status} body=${upstreamText.slice(0, 2_000)}`
+      );
+      return jsonResponse(502, {
+        error: `OpenAI API error (${openAiResponse.status}): ${upstreamMessage}`,
+      });
+    }
+
+    if (malformedJson) {
+      console.error(`OpenAI API returned malformed JSON: status=${openAiResponse.status} body=${upstreamText.slice(0, 2_000)}`);
+      return jsonResponse(502, {
+        error: `OpenAI API returned invalid JSON (HTTP ${openAiResponse.status}): ${upstreamText.slice(0, 1_000)}`,
       });
     }
 

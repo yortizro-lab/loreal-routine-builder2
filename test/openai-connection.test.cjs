@@ -65,8 +65,8 @@ for (const [name, loadHandler] of [
 
     global.fetch = async () => Response.json({ error: { message: "Rate limit exceeded." } }, { status: 429 });
     response = await handler(request());
-    assert.equal(response.status, 429);
-    assert.equal((await response.json()).error, "Rate limit exceeded.");
+    assert.equal(response.status, 502);
+    assert.equal((await response.json()).error, "OpenAI API error (429): Rate limit exceeded.");
 
     response = await handler(request(), "");
     assert.equal(response.status, 500);
@@ -82,8 +82,8 @@ for (const [name, loadHandler] of [
     console.error = () => { logged = true; };
     try {
       response = await handler(request());
-      assert.equal(response.status, 500);
-      assert.equal(typeof (await response.json()).error, "string");
+      assert.equal(response.status, 502);
+      assert.match((await response.json()).error, /OpenAI API returned invalid JSON \(HTTP 200\): not JSON/);
       assert.equal(logged, true);
     } finally {
       console.error = originalError;
