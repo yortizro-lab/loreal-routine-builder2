@@ -4,6 +4,11 @@
   "scripts": {
     "start": "node server.js",
     "check": "node --check server.js && node --check script.js",
-    "deploy": "npx wrangler deploy src/index.ts"
+    "types": "wrangler types",
+    "deploy": "wrangler deploy src/index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "wrangler": "^4.165.0"
   }
 }

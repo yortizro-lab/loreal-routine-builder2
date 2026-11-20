@@ -1,7 +1,7 @@
 interface Env {
   ASSETS: Fetcher;
   OPENAI_API_KEY: string;
-  OPENAI_MODEL?: string;
+  OPENAI_MODEL?: "gpt-4o-mini";
 }
 
 interface ChatMessage {
