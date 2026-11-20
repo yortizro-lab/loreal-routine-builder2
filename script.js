@@ -234,20 +234,29 @@ function appendChatResponse(routine, citations = []) {
 }
 
 async function readRoutineResponse(response, fallbackMessage) {
-  if (response.ok) return response.json();
-
-  console.error(`Routine request failed with status ${response.status}.`);
-  if (response.headers.get("content-type")?.toLowerCase().includes("application/json")) {
-    let data;
-    try {
-      data = await response.json();
-    } catch (error) {
-      if (!(error instanceof SyntaxError)) throw error;
-      console.error("Unable to parse the routine error response:", error);
-    }
-    if (typeof data?.error === "string" && data.error) throw new Error(data.error);
+  const contentType = response.headers.get("content-type");
+  const isJson = contentType?.toLowerCase().includes("application/json");
+  if (!isJson) {
+    if (!response.ok) throw new Error(`${fallbackMessage} (HTTP ${response.status})`);
+    throw new Error(`${fallbackMessage} (invalid JSON response)`);
   }
-  throw new Error(`${fallbackMessage} (HTTP ${response.status})`);
+
+  let data;
+  try {
+    data = await response.json();
+  } catch (error) {
+    if (!(error instanceof SyntaxError)) throw error;
+    console.error("Unable to parse the routine response:", error);
+  }
+
+  if (!response.ok) {
+    console.error("Server Error Detail:", data);
+    if (typeof data?.error === "string" && data.error) throw new Error(data.error);
+    throw new Error(`${fallbackMessage} (HTTP ${response.status})`);
+  }
+
+  if (!data) throw new Error(`${fallbackMessage} (invalid JSON response)`);
+  return data;
 }
 
 function loadSelection() {
