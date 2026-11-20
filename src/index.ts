@@ -1,5 +1,7 @@
 interface Env {
-  ASSETS: Fetcher;
+  ASSETS: {
+    fetch(request: Request): Promise<Response>;
+  };
   OPENAI_API_KEY: string;
   OPENAI_MODEL?: "gpt-4o-mini";
 }
