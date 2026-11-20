@@ -1,4 +1,4 @@
-name = "lorealroutinebuilder"
+name = "lorealroutinebuilder-com"
 compatibility_date = "2026-11-20"
 main = "src/index.ts"
 
