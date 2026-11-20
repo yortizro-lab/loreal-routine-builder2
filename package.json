@@ -1,0 +1,8 @@
+{
+  "name": "loreal-routine-builder",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check script.js"
+  }
+}
