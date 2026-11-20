@@ -32,6 +32,18 @@ the server side. Deploy with:
 npm run deploy
 ```
 
+To deploy the Worker entrypoint directly:
+
+```bash
+npx wrangler deploy src/index.ts
+```
+
+Set the Worker secret with:
+
+```bash
+npx wrangler secret put OPENAI_API_KEY
+```
+
 The browser keeps the recent chat transcript and sends it with each follow-up request so the routine responses remain contextual.
 
 Selected products are saved in browser local storage, so they remain selected after a reload. Use a product's × button or "Clear all" to remove them.

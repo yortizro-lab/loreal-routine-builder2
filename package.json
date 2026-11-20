@@ -4,6 +4,6 @@
   "scripts": {
     "start": "node server.js",
     "check": "node --check server.js && node --check script.js",
-    "deploy": "npx wrangler pages deploy ."
+    "deploy": "npx wrangler deploy src/index.ts"
   }
 }
