@@ -1,10 +1,4 @@
-node_modules/
-.git/
-.wrangler/
-src/
-functions/
-package.json
-package-lock.json
-server.js
-worker-configuration.d.ts
-wrangler.toml
+*
+!index.html
+!script.js
+!styles.css

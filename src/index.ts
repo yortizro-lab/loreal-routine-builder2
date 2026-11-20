@@ -1,3 +1,5 @@
+import { getOutputText } from "./openai-response.cjs";
+
 interface Env {
   ASSETS: {
     fetch(request: Request): Promise<Response>;
@@ -41,10 +43,18 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
       return jsonResponse(500, { error: "OpenAI API access is not configured." });
     }
 
-    const payload = await request.json() as {
+    let payload: {
       products?: Array<{ name?: string; category?: string }>;
       conversation?: ChatMessage[];
     };
+    try {
+      payload = await request.json() as typeof payload;
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        return jsonResponse(400, { error: "Invalid JSON request." });
+      }
+      throw error;
+    }
     const products = Array.isArray(payload.products) ? payload.products : [];
     const conversation = Array.isArray(payload.conversation) ? payload.conversation : [];
 
@@ -103,7 +113,7 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
 
     const data = await openAiResponse.json() as {
       output_text?: string;
-      output?: Array<{ content?: Array<{ annotations?: Array<{ type?: string; url?: string; title?: string }> }> }>;
+      output?: Array<{ type?: string; content?: Array<{ type?: string; text?: string; annotations?: Array<{ type?: string; url?: string; title?: string }> }> }>;
       error?: { message?: string };
     };
 
@@ -113,7 +123,7 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
       });
     }
 
-    const routine = data.output_text?.trim();
+    const routine = getOutputText(data);
     if (!routine) {
       return jsonResponse(502, { error: "OpenAI returned an empty routine." });
     }
@@ -137,9 +147,8 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
 
     return jsonResponse(200, { routine, citations });
   } catch (error) {
-    return jsonResponse(error instanceof SyntaxError ? 400 : 500, {
-      error: error instanceof SyntaxError ? "Invalid JSON request." : "Unable to generate a routine.",
-    });
+    console.error("Unable to generate a routine:", error);
+    return jsonResponse(500, { error: "Unable to generate a routine." });
   }
 }
 

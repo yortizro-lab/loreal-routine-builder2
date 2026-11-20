@@ -1,6 +1,7 @@
 const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
+const { getOutputText } = require("./src/openai-response.cjs");
 
 const port = Number(process.env.PORT || 4173);
 const root = __dirname;
@@ -71,7 +72,7 @@ async function generateRoutine(products, conversation) {
     throw new Error(data.error?.message || "The OpenAI API request failed.");
   }
 
-  const text = data.output_text?.trim();
+  const text = getOutputText(data);
   const citations = [];
   for (const item of data.output || []) {
     for (const content of item.content || []) {

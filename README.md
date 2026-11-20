@@ -16,33 +16,43 @@ Open `http://127.0.0.1:4173`.
 
 `OPENAI_MODEL` is optional and defaults to `gpt-4o-mini`.
 
-## Cloudflare Pages / Worker
-
-For deployment, set the API key as a Cloudflare Pages secret:
+To run the OpenAI response regression tests with Node.js 24:
 
 ```bash
-npx wrangler pages secret put OPENAI_API_KEY
+node --test test/openai-connection.test.cjs
 ```
 
-The browser calls only `POST /api/routine`. The Cloudflare Pages Function in
-`functions/api/routine.js` validates the request and keeps `OPENAI_API_KEY` on
-the server side. Deploy with:
+## Deploy to Cloudflare
+
+The API key must be configured on the same Cloudflare runtime that serves the
+chat endpoint. Do not put the key in browser code.
+
+### Cloudflare Worker
+
+`npm run deploy` deploys `src/index.ts` as a Worker. Set the Worker secret
+before deploying. Log in to Cloudflare first if needed:
 
 ```bash
+npx wrangler login
+npx wrangler secret put OPENAI_API_KEY
 npm run deploy
 ```
 
-To deploy the Worker entrypoint directly:
+The Worker serves only the files listed in `.assetsignore`; add any new public
+assets to that allowlist.
+
+### Cloudflare Pages
+
+If the site is deployed as a Pages project, configure the secret for that Pages
+project instead:
 
 ```bash
-npx wrangler deploy src/index.ts
+npx wrangler pages secret put OPENAI_API_KEY --project-name <your-pages-project>
 ```
 
-Set the Worker secret with:
-
-```bash
-npx wrangler secret put OPENAI_API_KEY
-```
+The Pages Function in `functions/api/routine.js` handles `POST /api/routine`.
+Deploy the site through the Pages project; `npm run deploy` is for the Worker,
+not Pages.
 
 The browser keeps the recent chat transcript and sends it with each follow-up request so the routine responses remain contextual.
 

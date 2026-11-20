@@ -1,10 +1,20 @@
+import { getOutputText } from "../../src/openai-response.cjs";
+
 export async function onRequestPost(context) {
   try {
     if (!context.env.OPENAI_API_KEY) {
       return jsonResponse(500, { error: "OpenAI API access is not configured." });
     }
 
-    const payload = await context.request.json();
+    let payload;
+    try {
+      payload = await context.request.json();
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        return jsonResponse(400, { error: "Invalid JSON request." });
+      }
+      throw error;
+    }
     const products = Array.isArray(payload.products) ? payload.products : [];
     const conversation = Array.isArray(payload.conversation) ? payload.conversation : [];
 
@@ -67,7 +77,7 @@ export async function onRequestPost(context) {
       });
     }
 
-    const routine = data.output_text?.trim();
+    const routine = getOutputText(data);
     if (!routine) {
       return jsonResponse(502, { error: "OpenAI returned an empty routine." });
     }
@@ -92,9 +102,8 @@ export async function onRequestPost(context) {
 
     return jsonResponse(200, { routine, citations });
   } catch (error) {
-    return jsonResponse(error instanceof SyntaxError ? 400 : 500, {
-      error: error instanceof SyntaxError ? "Invalid JSON request." : "Unable to generate a routine.",
-    });
+    console.error("Unable to generate a routine:", error);
+    return jsonResponse(500, { error: "Unable to generate a routine." });
   }
 }
 
