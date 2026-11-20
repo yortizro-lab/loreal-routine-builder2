@@ -83,7 +83,7 @@ for (const [name, loadHandler] of [
     try {
       response = await handler(request());
       assert.equal(response.status, 500);
-      assert.deepEqual(await response.json(), { error: "Unable to generate a routine." });
+      assert.equal(typeof (await response.json()).error, "string");
       assert.equal(logged, true);
     } finally {
       console.error = originalError;

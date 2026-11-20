@@ -17,6 +17,7 @@ export async function onRequestPost(context) {
     }
     const products = Array.isArray(payload.products) ? payload.products : [];
     const conversation = Array.isArray(payload.conversation) ? payload.conversation : [];
+    console.log("Received products:", products);
 
     if ((!products.length && !conversation.length) || products.length > 20) {
       return jsonResponse(400, {
@@ -103,7 +104,9 @@ export async function onRequestPost(context) {
     return jsonResponse(200, { routine, citations });
   } catch (error) {
     console.error("Unable to generate a routine:", error);
-    return jsonResponse(500, { error: "Unable to generate a routine." });
+    return jsonResponse(500, {
+      error: error instanceof Error ? error.message : "Unable to generate a routine.",
+    });
   }
 }
 

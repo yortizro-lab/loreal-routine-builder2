@@ -57,6 +57,7 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
     }
     const products = Array.isArray(payload.products) ? payload.products : [];
     const conversation = Array.isArray(payload.conversation) ? payload.conversation : [];
+    console.log("Received products:", products);
 
     if (!products.length && !conversation.length) {
       return jsonResponse(400, { error: "Select at least one product." });
@@ -148,7 +149,8 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
     return jsonResponse(200, { routine, citations });
   } catch (error) {
     console.error("Unable to generate a routine:", error);
-    return jsonResponse(500, { error: "Unable to generate a routine." });
+    const message = error instanceof Error ? error.message : "Unable to generate a routine.";
+    return jsonResponse(500, { error: message });
   }
 }
 
