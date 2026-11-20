@@ -16,6 +16,22 @@ Open `http://127.0.0.1:4173`.
 
 `OPENAI_MODEL` is optional and defaults to `gpt-4o-mini`.
 
+## Cloudflare Pages / Worker
+
+For deployment, set the API key as a Cloudflare Pages secret:
+
+```bash
+npx wrangler pages secret put OPENAI_API_KEY
+```
+
+The browser calls only `POST /api/routine`. The Cloudflare Pages Function in
+`functions/api/routine.js` validates the request and keeps `OPENAI_API_KEY` on
+the server side. Deploy with:
+
+```bash
+npm run deploy
+```
+
 The browser keeps the recent chat transcript and sends it with each follow-up request so the routine responses remain contextual.
 
 Selected products are saved in browser local storage, so they remain selected after a reload. Use a product's × button or "Clear all" to remove them.

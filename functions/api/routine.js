@@ -1,0 +1,121 @@
+export async function onRequestPost(context) {
+  try {
+    if (!context.env.OPENAI_API_KEY) {
+      return jsonResponse(500, { error: "OpenAI API access is not configured." });
+    }
+
+    const payload = await context.request.json();
+    const products = Array.isArray(payload.products) ? payload.products : [];
+    const conversation = Array.isArray(payload.conversation) ? payload.conversation : [];
+
+    if ((!products.length && !conversation.length) || products.length > 20) {
+      return jsonResponse(400, {
+        error: products.length > 20 ? "Too many products selected." : "Select at least one product.",
+      });
+    }
+
+    const selectedProducts = products
+      .filter((product) => product && typeof product.name === "string")
+      .slice(0, 20)
+      .map((product) => ({
+        name: product.name.slice(0, 200),
+        category: typeof product.category === "string" ? product.category.slice(0, 100) : "Product",
+      }));
+
+    const priorMessages = conversation
+      .filter((message) =>
+        message &&
+        (message.role === "user" || message.role === "assistant") &&
+        typeof message.content === "string"
+      )
+      .slice(-12)
+      .map((message) => ({
+        role: message.role,
+        content: message.content.slice(0, 2_000),
+      }));
+
+    const input = [
+      ...priorMessages,
+      ...(priorMessages.length === 0
+        ? [{
+            role: "user",
+            content: `Create my routine from these selected products:\n${JSON.stringify(selectedProducts, null, 2)}`,
+          }]
+        : []),
+    ];
+
+    const openAiResponse = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${context.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: context.env.OPENAI_MODEL || "gpt-4o-mini",
+        tools: [{ type: "web_search_preview" }],
+        instructions:
+          "You are a skincare routine advisor. Create a safe, practical personalized routine using only the products supplied by the user. Explain the morning and evening order, use concise clear steps, and state where a product is not appropriate for a certain time of day. Include sunscreen in the morning if it is among the selected products. Do not invent products or ingredients. Add a brief reminder to patch-test and stop use if irritation occurs.\n\nUse current, real-world skincare guidance and product facts. Search the web when relevant, and cite or link every substantial claim that depends on current information or official product guidance.\n\nSelected products:\n" +
+          JSON.stringify(selectedProducts, null, 2),
+        input,
+      }),
+    });
+
+    const data = await openAiResponse.json();
+    if (!openAiResponse.ok) {
+      return jsonResponse(openAiResponse.status === 429 ? 429 : 502, {
+        error: data.error?.message || "The OpenAI API request failed.",
+      });
+    }
+
+    const routine = data.output_text?.trim();
+    if (!routine) {
+      return jsonResponse(502, { error: "OpenAI returned an empty routine." });
+    }
+
+    const citations = [];
+    for (const item of data.output || []) {
+      for (const content of item.content || []) {
+        for (const annotation of content.annotations || []) {
+          if (annotation.type === "url_citation" && annotation.url) {
+            const exists = citations.some((citation) => citation.url === annotation.url);
+            if (!exists) {
+              let title = "Source";
+              try {
+                title = annotation.title || new URL(annotation.url).hostname;
+              } catch {}
+              citations.push({ title, url: annotation.url });
+            }
+          }
+        }
+      }
+    }
+
+    return jsonResponse(200, { routine, citations });
+  } catch (error) {
+    return jsonResponse(error instanceof SyntaxError ? 400 : 500, {
+      error: error instanceof SyntaxError ? "Invalid JSON request." : "Unable to generate a routine.",
+    });
+  }
+}
+
+export function onRequestOptions() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Allow": "POST, OPTIONS",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+    },
+  });
+}
+
+function jsonResponse(status, payload) {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
+}
