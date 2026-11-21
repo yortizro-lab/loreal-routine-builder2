@@ -66,10 +66,11 @@ async function generateRoutine(products, conversation) {
     }),
   });
 
-  const data = await response.json();
   if (!response.ok) {
-    throw new Error(data.error?.message || "The OpenAI API request failed.");
+    console.error(`OpenAI API error: status=${response.status}`);
+    throw new Error(`OpenAI API error (${response.status}). Check the API key, model access, rate limits, and billing.`);
   }
+  const data = await response.json();
 
   const text = getOutputText(data);
   const citations = [];
@@ -113,7 +114,13 @@ const server = http.createServer(async (request, response) => {
       return sendJson(response, 200, result);
     } catch (error) {
       const status = error instanceof SyntaxError ? 400 : 502;
-      return sendJson(response, status, { error: error.message || "Unable to generate a routine." });
+      const message = error instanceof SyntaxError
+        ? "Invalid JSON request or OpenAI response."
+        : error instanceof Error && (error.message.startsWith("OpenAI API error (") || error.message.startsWith("OpenAI API access is not configured") || error.message === "OpenAI returned an empty routine.")
+          ? error.message
+          : "Unable to generate a routine. Check server logs.";
+      if (message === "Unable to generate a routine. Check server logs.") console.error(message);
+      return sendJson(response, status, { error: message });
     }
   }
 

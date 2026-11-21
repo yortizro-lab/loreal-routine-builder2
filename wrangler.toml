@@ -2,9 +2,6 @@ name = "lorealroutinebuilder-com"
 compatibility_date = "2026-11-20"
 main = "src/index.ts"
 
-[vars]
-ALLOWED_ORIGIN = "yortizro-lab/lorealbeautybuilder.dev"
-
 [assets]
 directory = "./public"
 binding = "ASSETS"
@@ -19,6 +16,3 @@ persist = true
 enabled = false
 head_sampling_rate = 1
 persist = true
-
-[observability.issue_detection]
-enabled = false

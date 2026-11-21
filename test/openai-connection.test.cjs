@@ -40,16 +40,21 @@ for (const [name, loadHandler] of [
     return (req, key = "test-key") => worker.fetch(req, { OPENAI_API_KEY: key });
   }],
   ["Pages", async () => {
-    const { onRequestPost } = await import("../functions/api/routine.js");
-    return (req, key = "test-key") => onRequestPost({ request: req, env: { OPENAI_API_KEY: key } });
+    const { onRequest } = await import("../functions/api/routine.js");
+    return (req, key = "test-key") => onRequest({ request: req, env: { OPENAI_API_KEY: key } });
   }],
 ]) {
   test(`${name} handles raw OpenAI responses and reports failures safely`, async () => {
     const handler = await loadHandler();
     global.fetch = async (url, options) => {
       assert.equal(url, "https://api.openai.com/v1/responses");
+      assert.equal(options.method, "POST");
+      assert.equal(options.headers["Content-Type"], "application/json");
       assert.equal(options.headers.Authorization, "Bearer test-key");
-      const { instructions } = JSON.parse(options.body);
+      const { model, tools, instructions, input } = JSON.parse(options.body);
+      assert.equal(model, "gpt-4o-mini");
+      assert.equal(tools[0].type, "web_search_preview");
+      assert.match(input[0].content, /Sunscreen/);
       assert.match(instructions, /skincare, haircare, makeup/);
       assert.match(instructions, /L'Oreal Paris and Maybelline/);
       return Response.json(openAiResult);
@@ -69,7 +74,7 @@ for (const [name, loadHandler] of [
     global.fetch = async () => Response.json({ error: { message: "Rate limit exceeded." } }, { status: 429 });
     response = await handler(request());
     assert.equal(response.status, 502);
-    assert.equal((await response.json()).error, "OpenAI API error (429): Rate limit exceeded.");
+    assert.match((await response.json()).error, /OpenAI API error \(429\).*rate limits/);
 
     response = await handler(request(), "");
     assert.equal(response.status, 500);
@@ -86,13 +91,73 @@ for (const [name, loadHandler] of [
     try {
       response = await handler(request());
       assert.equal(response.status, 502);
-      assert.match((await response.json()).error, /OpenAI API returned invalid JSON \(HTTP 200\): not JSON/);
+      assert.equal((await response.json()).error, "OpenAI API returned invalid JSON (HTTP 200).");
       assert.equal(logged, true);
     } finally {
       console.error = originalError;
     }
   });
 }
+
+  test("Worker CORS covers preflight, success and errors only for configured origins", async () => {
+    const worker = require("../src/index.ts").default;
+    const env = { OPENAI_API_KEY: "test-key", ALLOWED_ORIGIN: "https://site.pages.dev" };
+    const send = (method, origin, body) => worker.fetch(new Request("https://worker.example/api/routine", {
+      method, headers: { Origin: origin }, ...(body ? { body } : {}),
+    }), env);
+
+    const preflight = await send("OPTIONS", "https://site.pages.dev");
+    assert.equal(preflight.status, 204);
+    assert.equal(preflight.headers.get("access-control-allow-origin"), "https://site.pages.dev");
+    assert.match(preflight.headers.get("access-control-allow-methods"), /POST/);
+    assert.match(preflight.headers.get("access-control-allow-headers"), /Content-Type/i);
+
+    global.fetch = async (_url, options) => {
+      assert.deepEqual(JSON.parse(options.body).input, [{ role: "user", content: "Hi" }]);
+      return Response.json(openAiResult);
+    };
+    const success = await send("POST", "https://site.pages.dev", JSON.stringify({ conversation: [{ role: "user", content: "Hi" }] }));
+    assert.equal(success.status, 200);
+    assert.equal(success.headers.get("access-control-allow-origin"), "https://site.pages.dev");
+    const method = await send("GET", "https://site.pages.dev");
+    assert.equal(method.status, 405);
+    assert.equal(method.headers.get("access-control-allow-origin"), "https://site.pages.dev");
+    const blocked = await send("POST", "https://other.example", "{}");
+    assert.equal(blocked.status, 403);
+    assert.equal(blocked.headers.get("access-control-allow-origin"), null);
+    const sameOrigin = await send("OPTIONS", "https://worker.example");
+    assert.equal(sameOrigin.headers.get("access-control-allow-origin"), "https://worker.example");
+    assert.equal(success.headers.get("vary"), "Origin");
+    const missingKey = await worker.fetch(new Request("https://worker.example/api/routine", {
+      method: "POST", headers: { Origin: "https://site.pages.dev" }, body: "{}",
+    }), { ALLOWED_ORIGIN: "https://site.pages.dev" });
+    assert.equal(missingKey.status, 500);
+    assert.equal(missingKey.headers.get("access-control-allow-origin"), "https://site.pages.dev");
+  });
+
+  test("Worker reports upstream failures without exposing response bodies or keys", async () => {
+    const worker = require("../src/index.ts").default;
+    const logs = [];
+    const originalError = console.error;
+    console.error = (...args) => logs.push(args.join(" "));
+    try {
+      for (const status of [401, 404, 429, 500]) {
+        global.fetch = async () => Response.json({ error: { message: "test-key" } }, { status });
+        const response = await worker.fetch(request(), { OPENAI_API_KEY: "test-key" });
+        assert.equal(response.status, 502);
+        const body = await response.text();
+        assert.match(body, new RegExp(`OpenAI API error \\(${status}\\)`));
+        assert.doesNotMatch(body, /test-key/);
+      }
+      global.fetch = async () => { throw new Error("test-key"); };
+      const response = await worker.fetch(request(), { OPENAI_API_KEY: "test-key" });
+      assert.equal(response.status, 502);
+      assert.doesNotMatch(await response.text(), /test-key/);
+      assert.doesNotMatch(logs.join("\n"), /test-key/);
+    } finally {
+      console.error = originalError;
+    }
+  });
 
 test("local server returns text from a raw OpenAI response", async () => {
   const oldPort = process.env.PORT;

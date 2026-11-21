@@ -5,7 +5,7 @@ interface Env {
     fetch(request: Request): Promise<Response>;
   };
   OPENAI_API_KEY: string;
-  OPENAI_MODEL?: "gpt-4o-mini";
+  OPENAI_MODEL?: string;
   ALLOWED_ORIGIN?: string;
 }
 
@@ -19,15 +19,27 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === "/api/routine") {
-      if (request.method === "OPTIONS") {
-        return new Response(null, { status: 204 });
+      const origin = request.headers.get("Origin");
+      const allowedOrigin = origin && (origin === url.origin || origin === env.ALLOWED_ORIGIN) ? origin : null;
+      const corsHeaders = new Headers({ Vary: "Origin", Allow: "POST, OPTIONS" });
+      if (allowedOrigin) {
+        corsHeaders.set("Access-Control-Allow-Origin", allowedOrigin);
+        corsHeaders.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+        corsHeaders.set("Access-Control-Allow-Headers", "Content-Type");
       }
 
-      if (request.method !== "POST") {
-        return jsonResponse(405, { error: "Method not allowed." });
+      let response: Response;
+      if (origin && !allowedOrigin) {
+        response = jsonResponse(403, { error: "Origin not allowed." });
+      } else if (request.method === "OPTIONS") {
+        response = new Response(null, { status: 204 });
+      } else if (request.method !== "POST") {
+        response = jsonResponse(405, { error: "Method not allowed." });
+      } else {
+        response = await generateRoutine(request, env);
       }
-
-      return generateRoutine(request, env);
+      corsHeaders.forEach((value, key) => response.headers.set(key, value));
+      return response;
     }
 
     if (request.method === "GET" || request.method === "HEAD") {
@@ -56,9 +68,11 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
       }
       throw error;
     }
+    if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+      return jsonResponse(400, { error: "Expected a JSON object." });
+    }
     const products = Array.isArray(payload.products) ? payload.products : [];
     const conversation = Array.isArray(payload.conversation) ? payload.conversation : [];
-    console.log("Received products:", products);
 
     if (!products.length && !conversation.length) {
       return jsonResponse(400, { error: "Select at least one product." });
@@ -97,25 +111,30 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
         : []),
     ];
 
-    const openAiResponse = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: env.OPENAI_MODEL || "gpt-4o-mini",
-        tools: [{ type: "web_search_preview" }],
-        instructions: getRoutineInstructions(selectedProducts),
-        input,
-      }),
-    });
+    let openAiResponse: Response;
+    try {
+      openAiResponse = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: env.OPENAI_MODEL || "gpt-4o-mini",
+          tools: [{ type: "web_search_preview" }],
+          instructions: getRoutineInstructions(selectedProducts),
+          input,
+        }),
+      });
+    } catch {
+      console.error("Unable to reach OpenAI.");
+      return jsonResponse(502, { error: "Unable to reach OpenAI. Try again later." });
+    }
 
     const upstreamText = await openAiResponse.text();
     let data: {
       output_text?: string;
       output?: Array<{ type?: string; content?: Array<{ type?: string; text?: string; annotations?: Array<{ type?: string; url?: string; title?: string }> }> }>;
-      error?: { message?: string } | string;
     };
     let malformedJson = false;
     try {
@@ -126,20 +145,20 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
     }
 
     if (!openAiResponse.ok) {
-      const upstreamMessage =
-        typeof data.error === "string"
-          ? data.error
-          : data.error?.message || upstreamText.slice(0, 1_000) || "No error details returned";
-      console.error(
-        `OpenAI API error: status=${openAiResponse.status} body=${upstreamText.slice(0, 2_000)}`
-      );
+      console.error(`OpenAI API error: status=${openAiResponse.status}`);
+      const hints: Record<number, string> = {
+        401: "Check the Worker API key.",
+        403: "Check API key permissions and model access.",
+        404: "Check the API endpoint and model configuration.",
+        429: "Check your OpenAI rate limits and billing.",
+      };
       return jsonResponse(502, {
-        error: `OpenAI API error (${openAiResponse.status}): ${upstreamMessage}`,
+        error: `OpenAI API error (${openAiResponse.status}). ${hints[openAiResponse.status] || "Try again later or check Worker logs."}`,
       });
     }
 
     if (malformedJson) {
-      console.error(`OpenAI API returned malformed JSON: status=${openAiResponse.status} body=${upstreamText.slice(0, 2_000)}`);
+      console.error(`OpenAI API returned malformed JSON: status=${openAiResponse.status}`);
       return jsonResponse(502, {
         error: `OpenAI API returned invalid JSON (HTTP ${openAiResponse.status}).`,
       });
@@ -168,10 +187,9 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
     }
 
     return jsonResponse(200, { routine, citations });
-  } catch (error) {
-    console.error("Unable to generate a routine:", error);
-    const message = error instanceof Error ? error.message : "Unable to generate a routine.";
-    return jsonResponse(500, { error: message });
+  } catch {
+    console.error("Unable to generate a routine.");
+    return jsonResponse(500, { error: "Unable to generate a routine. Check Worker logs." });
   }
 }
 

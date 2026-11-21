@@ -1,3 +1,5 @@
+const routineApiUrl = document.querySelector('meta[name="routine-api-url"]')?.content || "/api/routine";
+
 const products = [
   {
     id: "revitalift-serum",
@@ -246,11 +248,10 @@ async function readRoutineResponse(response, fallbackMessage) {
     data = await response.json();
   } catch (error) {
     if (!(error instanceof SyntaxError)) throw error;
-    console.error("Unable to parse the routine response:", error);
+    console.error("Unable to parse the routine response.");
   }
 
   if (!response.ok) {
-    console.error("Server Error Detail:", data);
     if (typeof data?.error === "string" && data.error) throw new Error(data.error);
     throw new Error(`${fallbackMessage} (HTTP ${response.status})`);
   }
@@ -471,7 +472,7 @@ floatingChatForm.addEventListener("submit", async (event) => {
   floatingChatMessages.scrollTop = floatingChatMessages.scrollHeight;
 
   try {
-    const response = await fetch("/api/routine", {
+    const response = await fetch(routineApiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ products: selectedProducts, conversation: floatingConversation }),
@@ -548,7 +549,7 @@ generateButton.addEventListener("click", async () => {
   generateButton.innerHTML = `${translations[currentLanguage].generating} <span aria-hidden="true">·</span>`;
 
   try {
-    const response = await fetch("/api/routine", {
+    const response = await fetch(routineApiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ products: selectedProducts, conversation }),
@@ -609,7 +610,7 @@ chatForm.addEventListener("submit", async (event) => {
   chatSend.disabled = true;
 
   try {
-    const response = await fetch("/api/routine", {
+    const response = await fetch(routineApiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ products: selectedProducts, conversation }),
