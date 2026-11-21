@@ -35,7 +35,7 @@ function loadApp(fetch) {
     removeItem() {},
   };
   const context = vm.createContext({ document, localStorage, fetch, console: { error() {} }, SyntaxError });
-  vm.runInContext(fs.readFileSync(path.join(__dirname, "../script.js"), "utf8"), context);
+  vm.runInContext(fs.readFileSync(path.join(__dirname, "../public/script.js"), "utf8"), context);
   return { context, elements };
 }
 

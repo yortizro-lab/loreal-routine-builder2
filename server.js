@@ -4,7 +4,7 @@ const path = require("node:path");
 const { getOutputText, getRoutineInstructions } = require("./src/openai-response.cjs");
 
 const port = Number(process.env.PORT || 4173);
-const root = __dirname;
+const root = path.join(__dirname, "public");
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
