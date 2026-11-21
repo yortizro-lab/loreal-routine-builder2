@@ -71,12 +71,22 @@ chat endpoint. Do not put the key in browser code.
    and JSON, and returns a JSON `routine`. An OPTIONS preflight should return
    204 with the matching `Access-Control-Allow-Origin`.
 
+The Worker supports `GET /` as a health check, returning `{"status":"ok"}`.
+It only confirms that the Worker is running; it does not check the secret or
+OpenAI connectivity. Send routine requests to `POST /api/routine`; the same
+path accepts `OPTIONS` for CORS preflight. Other methods or paths return HTTP 405.
+For example, after deploying:
+
+```bash
+curl -i https://your-worker.your-subdomain.workers.dev/
+```
+
 The Worker calls `POST https://api.openai.com/v1/responses`, authenticating with
 `env.OPENAI_API_KEY`. A missing key returns HTTP 500. An OpenAI failure returns
 HTTP 502 with the upstream status: 401 indicates a key problem, 404 can indicate
 an endpoint or model problem, and 429 indicates a rate limit or billing issue.
-An upstream 500 or a network failure can be transient. HTTP 405 means the
-endpoint was called with a method other than POST or OPTIONS. A browser CORS
+An upstream 500 or a network failure can be transient. Opening `/api/routine`
+in a browser uses GET and returns HTTP 405; this does not test the API key. A browser CORS
 error generally means the Pages origin does not exactly match `ALLOWED_ORIGIN`,
 or that the browser is not reaching the intended Worker URL. Inspect Worker
 logs for status-only diagnostics; response bodies and credentials are not logged.

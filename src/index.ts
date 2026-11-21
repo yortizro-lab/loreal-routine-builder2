@@ -15,6 +15,10 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
+    if (url.pathname === "/" && request.method === "GET") {
+      return jsonResponse(200, { status: "ok" });
+    }
+
     if (url.pathname === "/api/routine") {
       const origin = request.headers.get("Origin");
       const allowedOrigin = origin && (origin === url.origin || origin === env.ALLOWED_ORIGIN) ? origin : null;

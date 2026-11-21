@@ -28,6 +28,25 @@ function request(body = JSON.stringify({ products: [{ name: "Sunscreen" }] })) {
   return new Request("https://example.com/api/routine", { method: "POST", body });
 }
 
+test("Worker root health check is safe and does not change other routes", async () => {
+  const worker = require("../src/index.ts").default;
+  const env = { OPENAI_API_KEY: "test-key", OPENAI_MODEL: "private-config" };
+  global.fetch = async () => { throw new Error("Health check must not call OpenAI"); };
+
+  const health = await worker.fetch(new Request("https://worker.example/"), env);
+  assert.equal(health.status, 200);
+  assert.equal(health.headers.get("cache-control"), "no-store");
+  assert.deepEqual(await health.json(), { status: "ok" });
+  const withoutKey = await worker.fetch(new Request("https://worker.example/"), {});
+  assert.equal(withoutKey.status, 200);
+  assert.deepEqual(await withoutKey.json(), { status: "ok" });
+  for (const [path, method] of [["/", "POST"], ["/unknown", "GET"], ["/api/routine", "GET"]]) {
+    const response = await worker.fetch(new Request(`https://worker.example${path}`, { method }), env);
+    assert.equal(response.status, 405);
+    assert.deepEqual(await response.json(), { error: "Method not allowed." });
+  }
+});
+
 test("extracts raw Responses API text and preserves SDK-style fallback", () => {
   assert.equal(getOutputText(openAiResult), "Morning: apply sunscreen.");
   assert.equal(getOutputText({ output_text: "  fallback  " }), "fallback");
@@ -158,6 +177,19 @@ for (const [name, loadHandler] of [
       console.error = originalError;
     }
   });
+
+test("Worker uses the configured OpenAI model", async () => {
+  const worker = require("../src/index.ts").default;
+  global.fetch = async (_url, options) => {
+    assert.equal(JSON.parse(options.body).model, "configured-model");
+    return Response.json(openAiResult);
+  };
+  const response = await worker.fetch(request(), {
+    OPENAI_API_KEY: "test-key",
+    OPENAI_MODEL: "configured-model",
+  });
+  assert.equal(response.status, 200);
+});
 
 test("local server returns text from a raw OpenAI response", async () => {
   const oldPort = process.env.PORT;
