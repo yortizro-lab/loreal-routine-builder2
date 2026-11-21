@@ -6,6 +6,7 @@ interface Env {
   };
   OPENAI_API_KEY: string;
   OPENAI_MODEL?: "gpt-4o-mini";
+  ALLOWED_ORIGIN?: string;
 }
 
 interface ChatMessage {

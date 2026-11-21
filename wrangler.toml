@@ -2,6 +2,9 @@ name = "lorealroutinebuilder-com"
 compatibility_date = "2026-11-20"
 main = "src/index.ts"
 
+[vars]
+ALLOWED_ORIGIN = "yortizro-lab/lorealbeautybuilder.dev"
+
 [assets]
 directory = "./public"
 binding = "ASSETS"
