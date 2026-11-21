@@ -103,7 +103,7 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
         Authorization: `Bearer ${env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: OPENAI_MODEL || "gpt-4o-mini",
+        model: env.OPENAI_MODEL || "gpt-4o-mini",
         tools: [{ type: "web_search_preview" }],
         instructions: getRoutineInstructions(selectedProducts),
         input,
