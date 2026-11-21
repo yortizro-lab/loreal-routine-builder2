@@ -1,9 +1,6 @@
 import { getOutputText, getRoutineInstructions } from "./openai-response.cjs";
 
 interface Env {
-  ASSETS: {
-    fetch(request: Request): Promise<Response>;
-  };
   OPENAI_API_KEY: string;
   OPENAI_MODEL?: string;
   ALLOWED_ORIGIN?: string;
@@ -40,10 +37,6 @@ export default {
       }
       corsHeaders.forEach((value, key) => response.headers.set(key, value));
       return response;
-    }
-
-    if (request.method === "GET" || request.method === "HEAD") {
-      return env.ASSETS.fetch(request);
     }
 
     return jsonResponse(405, { error: "Method not allowed." });

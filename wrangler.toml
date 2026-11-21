@@ -2,10 +2,6 @@ name = "lorealroutinebuilder-com"
 compatibility_date = "2026-11-20"
 main = "src/index.ts"
 
-[assets]
-directory = "./public"
-binding = "ASSETS"
-
 [observability.logs]
 enabled = true
 head_sampling_rate = 1
