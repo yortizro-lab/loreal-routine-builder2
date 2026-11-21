@@ -114,7 +114,7 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
         },
         body: JSON.stringify({
           model: env.OPENAI_MODEL || "gpt-6-luna",
-          tools: [{ type: "web_search_preview" }],
+          tools: [{ type: "web_search" }],
           instructions: getRoutineInstructions(selectedProducts),
           input,
         }),

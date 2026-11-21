@@ -53,7 +53,7 @@ for (const [name, loadHandler] of [
       assert.equal(options.headers.Authorization, "Bearer test-key");
       const { model, tools, instructions, input } = JSON.parse(options.body);
       assert.equal(model, "gpt-6-luna");
-      assert.equal(tools[0].type, "web_search_preview");
+      assert.equal(tools[0].type, "web_search");
       assert.match(input[0].content, /Sunscreen/);
       assert.match(instructions, /skincare, haircare, makeup/);
       assert.match(instructions, /L'Oreal Paris and Maybelline/);
