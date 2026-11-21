@@ -1,7 +1,11 @@
-const http = require("node:http");
-const fs = require("node:fs");
-const path = require("node:path");
-const { getOutputText, getRoutineInstructions } = require("./src/openai-response.cjs");
+import http from "node:http";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import openaiResponse from "./src/openai-response.cjs";
+
+const { getOutputText, getRoutineInstructions } = openaiResponse;
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const port = Number(process.env.PORT || 4173);
 const root = path.join(__dirname, "public");
@@ -59,7 +63,7 @@ async function generateRoutine(products, conversation) {
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+      model: process.env.OPENAI_MODEL || "gpt-6-luna",
       tools: [{ type: "web_search_preview" }],
       instructions: getRoutineInstructions(selectedProducts),
       input,

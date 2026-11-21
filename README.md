@@ -16,10 +16,10 @@ npm start
 
 Open `http://127.0.0.1:4173`.
 
-`OPENAI_MODEL` is optional and defaults to `gpt-4o-mini`. OpenAI currently
-lists this model as deprecated, although it supports the Responses API and web
-search. Set `OPENAI_MODEL` to another model available to your OpenAI project
-that supports both features when migrating; review its pricing first.
+`OPENAI_MODEL` is optional and defaults to `gpt-6-luna`, which supports the
+Responses API and web search. Set `OPENAI_MODEL` to another model available to
+your OpenAI project that supports both features; review its pricing before
+changing the default.
 
 To run the routine response regression tests with Node.js 24:
 
