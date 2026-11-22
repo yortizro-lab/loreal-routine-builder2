@@ -111,7 +111,7 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
         : []),
     ];
 
-    const model = env.OPENAI_MODEL || "gpt-4.1";
+    const model = env.OPENAI_MODEL?.trim() || "gpt-4.1";
     // Web search is off unless ENABLE_WEB_SEARCH is exactly "true".
     const webSearch = env.ENABLE_WEB_SEARCH === "true";
 

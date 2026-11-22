@@ -198,6 +198,21 @@ test("Worker uses the configured OpenAI model", async () => {
   assert.equal(response.status, 200);
 });
 
+test("Worker sends the exact Responses URL, gpt-4.1 by default, and no web_search tool", async () => {
+  const worker = require("../src/index.ts").default;
+  for (const OPENAI_MODEL of [undefined, "", "  "]) {
+    global.fetch = async (url, options) => {
+      const body = JSON.parse(options.body);
+      assert.equal(url, "https://api.openai.com/v1/responses");
+      assert.equal(body.model, "gpt-4.1");
+      assert.equal("tools" in body, false);
+      return Response.json(openAiResult);
+    };
+    const response = await worker.fetch(request(), { OPENAI_API_KEY: "test-key", OPENAI_MODEL, ENABLE_WEB_SEARCH: "false" });
+    assert.equal(response.status, 200);
+  }
+});
+
 test("Worker enables web search only when ENABLE_WEB_SEARCH is true", async () => {
   const worker = require("../src/index.ts").default;
   global.fetch = async (_url, options) => {
