@@ -6,8 +6,8 @@
     "node": ">=22"
   },
   "scripts": {
-    "start": "node server.js",
-    "check": "node --check server.js && node --check public/script.js",
+    "start": "wrangler dev",
+    "check": "node --check public/script.js",
     "types": "wrangler types",
     "deploy": "wrangler deploy src/index.ts"
   },

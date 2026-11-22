@@ -5,16 +5,14 @@ Select skincare products and generate a personalized routine through OpenAI.
 
 ## Run locally
 
-Set an API key in the server environment without writing it into the project,
-then start the app:
+Put an API key in `.dev.vars` (git-ignored) as `OPENAI_API_KEY=...`, then start
+the Worker, which also serves `public`:
 
 ```bash
-read -rs -p "OpenAI API key: " OPENAI_API_KEY; echo
-export OPENAI_API_KEY
 npm start
 ```
 
-Open `http://127.0.0.1:4173`.
+Open the local URL printed by Wrangler (by default `http://localhost:8787`).
 
 `OPENAI_MODEL` is optional and defaults to `gpt-6-luna`, which supports the
 Responses API and web search. Set `OPENAI_MODEL` to another model available to
@@ -56,7 +54,7 @@ chat endpoint. Do not put the key in browser code.
    npm run deploy
    ```
 
-   `wrangler.toml` identifies the Worker as `lorealroutinebuilder-com` and
+   `wrangler.toml` identifies the Worker as `loreal-routine-builder2` and
    `src/index.ts` as its entry point; there is no `worker.js` in this project.
    The secret belongs to that Worker, not the Pages project. For a named
    Wrangler environment, set its secret and origin and deploy to that same

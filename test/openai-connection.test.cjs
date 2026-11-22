@@ -1,5 +1,4 @@
 const assert = require("node:assert/strict");
-const http = require("node:http");
 const { after, test } = require("node:test");
 const { getOutputText } = require("../src/openai-response.cjs");
 
@@ -196,49 +195,4 @@ test("Worker uses the configured OpenAI model", async () => {
     OPENAI_MODEL: "configured-model",
   });
   assert.equal(response.status, 200);
-});
-
-test("local server returns text from a raw OpenAI response", async () => {
-  const oldPort = process.env.PORT;
-  const oldKey = process.env.OPENAI_API_KEY;
-  const originalCreateServer = http.createServer;
-  let server;
-  process.env.PORT = "0";
-  process.env.OPENAI_API_KEY = "test-key";
-  global.fetch = async (_url, options) => {
-    const { instructions } = JSON.parse(options.body);
-    assert.match(instructions, /skincare, haircare, makeup/);
-    assert.match(instructions, /L'Oreal Paris and Maybelline/);
-    return Response.json(openAiResult);
-  };
-  http.createServer = (...args) => {
-    server = originalCreateServer(...args);
-    return server;
-  };
-  try {
-    require("../server.js");
-    await new Promise((resolve) => server.once("listening", resolve));
-    const result = await new Promise((resolve, reject) => {
-      const req = http.request({
-        host: "127.0.0.1",
-        port: server.address().port,
-        path: "/api/routine",
-        method: "POST",
-      }, (res) => {
-        let body = "";
-        res.on("data", (chunk) => { body += chunk; });
-        res.on("end", () => resolve({ status: res.statusCode, body: JSON.parse(body) }));
-      });
-      req.on("error", reject);
-      req.end(JSON.stringify({ products: [{ name: "Sunscreen" }] }));
-    });
-    assert.equal(result.status, 200);
-    assert.equal(result.body.routine, "Morning: apply sunscreen.");
-    assert.deepEqual(result.body.citations, [{ title: "Guide", url: "https://example.com/guide" }]);
-  } finally {
-    http.createServer = originalCreateServer;
-    if (server) await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
-    if (oldPort === undefined) delete process.env.PORT; else process.env.PORT = oldPort;
-    if (oldKey === undefined) delete process.env.OPENAI_API_KEY; else process.env.OPENAI_API_KEY = oldKey;
-  }
 });
