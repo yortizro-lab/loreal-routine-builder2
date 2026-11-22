@@ -128,22 +128,10 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
       return jsonResponse(502, { error: "Unable to reach OpenAI. Try again later." });
     }
 
-    const upstreamText = await openAiResponse.text();
-    let data: {
-      output_text?: string;
-      output?: Array<{ type?: string; content?: Array<{ type?: string; text?: string; annotations?: Array<{ type?: string; url?: string; title?: string }> }> }>;
-    };
-    let malformedJson = false;
-    try {
-      data = JSON.parse(upstreamText);
-    } catch {
-      malformedJson = true;
-      data = { output: [] };
-    }
-
     if (!openAiResponse.ok) {
       console.error(`OpenAI API error: status=${openAiResponse.status}`);
       const hints: Record<number, string> = {
+        400: "Check the request and model configuration.",
         401: "Check the Worker API key.",
         403: "Check API key permissions and model access.",
         404: "Check the API endpoint and model configuration.",
@@ -154,7 +142,13 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
       });
     }
 
-    if (malformedJson) {
+    let data: {
+      output_text?: string;
+      output?: Array<{ type?: string; content?: Array<{ type?: string; text?: string; annotations?: Array<{ type?: string; url?: string; title?: string }> }> }>;
+    };
+    try {
+      data = await openAiResponse.json() as typeof data;
+    } catch {
       console.error(`OpenAI API returned malformed JSON: status=${openAiResponse.status}`);
       return jsonResponse(502, {
         error: `OpenAI API returned invalid JSON (HTTP ${openAiResponse.status}).`,

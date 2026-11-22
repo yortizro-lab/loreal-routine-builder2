@@ -160,16 +160,23 @@ for (const [name, loadHandler] of [
     const originalError = console.error;
     console.error = (...args) => logs.push(args.join(" "));
     try {
-      for (const status of [401, 404, 429, 500]) {
+      for (const status of [400, 401, 403, 404, 429, 500]) {
         global.fetch = async () => Response.json({ error: { message: "test-key" } }, { status });
         const response = await worker.fetch(request(), { OPENAI_API_KEY: "test-key" });
         assert.equal(response.status, 502);
         const body = await response.text();
         assert.match(body, new RegExp(`OpenAI API error \\(${status}\\)`));
+        if (status === 400) assert.match(body, /request and model configuration/);
         assert.doesNotMatch(body, /test-key/);
       }
+      global.fetch = async () => new Response(new ReadableStream({
+        start(controller) { controller.error(new Error("test-key")); },
+      }), { status: 401 });
+      let response = await worker.fetch(request(), { OPENAI_API_KEY: "test-key" });
+      assert.equal(response.status, 502);
+      assert.match(await response.text(), /OpenAI API error \(401\)/);
       global.fetch = async () => { throw new Error("test-key"); };
-      const response = await worker.fetch(request(), { OPENAI_API_KEY: "test-key" });
+      response = await worker.fetch(request(), { OPENAI_API_KEY: "test-key" });
       assert.equal(response.status, 502);
       assert.doesNotMatch(await response.text(), /test-key/);
       assert.doesNotMatch(logs.join("\n"), /test-key/);

@@ -81,10 +81,26 @@ For example, after deploying:
 curl -i https://your-worker.your-subdomain.workers.dev/
 ```
 
+To test the actual OpenAI connection, replace the URL below with the same
+Worker URL and run:
+
+```bash
+curl -sS -i https://your-worker.your-subdomain.workers.dev/api/routine \
+  -H 'Content-Type: application/json' \
+  -d '{"products":[{"name":"Sunscreen","category":"Skincare"}]}'
+```
+
+A successful response is HTTP 200 with a nonempty `routine` and a `citations`
+array. This makes a real OpenAI request and may incur charges. It also checks
+that the configured key can use the configured model; the health check cannot.
+Do not include the API key in the curl command.
+
 The Worker calls `POST https://api.openai.com/v1/responses`, authenticating with
 `env.OPENAI_API_KEY`. A missing key returns HTTP 500. An OpenAI failure returns
-HTTP 502 with the upstream status: 401 indicates a key problem, 404 can indicate
-an endpoint or model problem, and 429 indicates a rate limit or billing issue.
+HTTP 502 with the upstream status: 400 can indicate a request or model problem,
+401 indicates a key problem, 403 can indicate permissions or model access,
+404 can indicate an endpoint or model problem, and 429 indicates a rate limit
+or billing issue.
 An upstream 500 or a network failure can be transient. Opening `/api/routine`
 in a browser uses GET and returns HTTP 405; this does not test the API key. A browser CORS
 error generally means the Pages origin does not exactly match `ALLOWED_ORIGIN`,
