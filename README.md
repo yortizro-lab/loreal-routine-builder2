@@ -14,7 +14,7 @@ npm start
 
 Open the local URL printed by Wrangler (by default `http://localhost:8787`).
 
-`OPENAI_MODEL` is optional and defaults to `gpt-6-luna`, which supports the
+`OPENAI_MODEL` is optional and defaults to `gpt-4.1`, which supports the
 Responses API and web search. Set `OPENAI_MODEL` to another model available to
 your OpenAI project that supports both features; review its pricing before
 changing the default.
@@ -69,9 +69,10 @@ chat endpoint. Do not put the key in browser code.
    and JSON, and returns a JSON `routine`. An OPTIONS preflight should return
    204 with the matching `Access-Control-Allow-Origin`.
 
-The Worker supports `GET /` as a health check, returning `{"status":"ok"}`.
-It only confirms that the Worker is running; it does not check the secret or
-OpenAI connectivity. Send routine requests to `POST /api/routine`; the same
+With `[assets]` serving `public` (as in this `wrangler.toml`), `GET /` returns the
+site's `index.html`, not the Worker's `{"status":"ok"}` JSON, because assets are
+matched first. Use `GET /` only to confirm the site loads; it does not check the
+secret or OpenAI connectivity. Send routine requests to `POST /api/routine`; the same
 path accepts `OPTIONS` for CORS preflight. Other methods or paths return HTTP 405.
 For example, after deploying:
 

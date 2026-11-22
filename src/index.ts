@@ -117,19 +117,34 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
           Authorization: `Bearer ${env.OPENAI_API_KEY}`,
         },
         body: JSON.stringify({
-          model: env.OPENAI_MODEL || "default model",
+          model: env.OPENAI_MODEL || "gpt-4.1",
           tools: [{ type: "web_search" }],
           instructions: getRoutineInstructions(selectedProducts),
           input,
         }),
       });
-    } catch {
-      console.error("Unable to reach OpenAI.");
-      return jsonResponse(502, { error: "Unable to reach OpenAI. Try again later." });
+    } catch (error) {
+      const name = error instanceof Error ? error.name : "UnknownError";
+      const message = sanitizeForLog(error instanceof Error ? error.message : String(error), env);
+      console.error(`OpenAI fetch failed: ${name}: ${message}`);
+      return jsonResponse(502, {
+        error: `Unable to reach OpenAI (network error: ${name}). Check Worker logs.`,
+      });
     }
 
+    console.log(`OpenAI response status=${openAiResponse.status}`);
+
     if (!openAiResponse.ok) {
-      console.error(`OpenAI API error: status=${openAiResponse.status}`);
+      const rawBody = await openAiResponse.text().catch(() => "");
+      console.error(
+        `OpenAI API error: status=${openAiResponse.status} body=${sanitizeForLog(rawBody, env).slice(0, 2_000)}`,
+      );
+      let detail = "";
+      try {
+        const err = (JSON.parse(rawBody) as { error?: { code?: string; type?: string } }).error;
+        const code = err?.code || err?.type;
+        if (typeof code === "string" && /^[\w.-]{1,64}$/.test(code)) detail = ` [${code}]`;
+      } catch {}
       const hints: Record<number, string> = {
         400: "Check the request and model configuration.",
         401: "Check the Worker API key.",
@@ -138,7 +153,7 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
         429: "Check your OpenAI rate limits and billing.",
       };
       return jsonResponse(502, {
-        error: `OpenAI API error (${openAiResponse.status}). ${hints[openAiResponse.status] || "Try again later or check Worker logs."}`,
+        error: `OpenAI API error (${openAiResponse.status})${detail}. ${hints[openAiResponse.status] || "Try again later or check Worker logs."}`,
       });
     }
 
@@ -182,6 +197,14 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
     console.error("Unable to generate a routine.");
     return jsonResponse(500, { error: "Unable to generate a routine. Check Worker logs." });
   }
+}
+
+function sanitizeForLog(text: string, env: Env): string {
+  let out = text;
+  if (env.OPENAI_API_KEY) out = out.split(env.OPENAI_API_KEY).join("[REDACTED]");
+  return out
+    .replace(/sk-[A-Za-z0-9_-]{8,}/g, "[REDACTED]")
+    .replace(/Bearer\s+[A-Za-z0-9._~+\/=-]+/gi, "Bearer [REDACTED]");
 }
 
 function jsonResponse(status: number, payload: unknown): Response {

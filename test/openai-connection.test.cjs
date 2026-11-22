@@ -70,7 +70,7 @@ for (const [name, loadHandler] of [
       assert.equal(options.headers["Content-Type"], "application/json");
       assert.equal(options.headers.Authorization, "Bearer test-key");
       const { model, tools, instructions, input } = JSON.parse(options.body);
-      assert.equal(model, "gpt-6-luna");
+      assert.equal(model, "gpt-4.1");
       assert.equal(tools[0].type, "web_search");
       assert.match(input[0].content, /Sunscreen/);
       assert.match(instructions, /skincare, haircare, makeup/);
