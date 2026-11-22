@@ -3,6 +3,7 @@ import { getOutputText, getRoutineInstructions } from "./openai-response.cjs";
 interface Env {
   OPENAI_API_KEY: string;
   OPENAI_MODEL?: string;
+  ENABLE_WEB_SEARCH?: string;
   ALLOWED_ORIGIN?: string;
 }
 
@@ -10,6 +11,8 @@ interface ChatMessage {
   role: "user" | "assistant";
   content: string;
 }
+
+const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -108,18 +111,22 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
         : []),
     ];
 
+    const model = env.OPENAI_MODEL || "gpt-4.1";
+    // Web search is off unless ENABLE_WEB_SEARCH is exactly "true".
+    const webSearch = env.ENABLE_WEB_SEARCH === "true";
+
     let openAiResponse: Response;
     try {
-      openAiResponse = await fetch("https://api.openai.com/v1/responses", {
+      openAiResponse = await fetch(OPENAI_RESPONSES_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${env.OPENAI_API_KEY}`,
         },
         body: JSON.stringify({
-          model: env.OPENAI_MODEL || "gpt-4.1",
-          tools: [{ type: "web_search" }],
-          instructions: getRoutineInstructions(selectedProducts),
+          model,
+          ...(webSearch ? { tools: [{ type: "web_search" }] } : {}),
+          instructions: getRoutineInstructions(selectedProducts, webSearch),
           input,
         }),
       });
@@ -132,24 +139,30 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
       });
     }
 
-    console.log(`OpenAI response status=${openAiResponse.status}`);
+    console.log(`OpenAI request url=${OPENAI_RESPONSES_URL} model=${model} web_search=${webSearch} status=${openAiResponse.status}`);
 
     if (!openAiResponse.ok) {
       const rawBody = await openAiResponse.text().catch(() => "");
-      console.error(
-        `OpenAI API error: status=${openAiResponse.status} body=${sanitizeForLog(rawBody, env).slice(0, 2_000)}`,
-      );
       let detail = "";
+      let errorCode = "";
+      let errorType = "";
       try {
         const err = (JSON.parse(rawBody) as { error?: { code?: string; type?: string } }).error;
+        if (typeof err?.code === "string") errorCode = err.code.slice(0, 64);
+        if (typeof err?.type === "string") errorType = err.type.slice(0, 64);
         const code = err?.code || err?.type;
         if (typeof code === "string" && /^[\w.-]{1,64}$/.test(code)) detail = ` [${code}]`;
       } catch {}
+      console.error(
+        `OpenAI API error: status=${openAiResponse.status} code=${errorCode || "none"} type=${errorType || "none"} model=${model} url=${OPENAI_RESPONSES_URL} body=${sanitizeForLog(rawBody, env).slice(0, 2_000)}`,
+      );
       const hints: Record<number, string> = {
         400: "Check the request and model configuration.",
         401: "Check the Worker API key.",
         403: "Check API key permissions and model access.",
-        404: "Check the API endpoint and model configuration.",
+        404: errorCode === "model_not_found"
+          ? "The model was not found or this API key cannot access it. Check OPENAI_MODEL."
+          : "Check the API endpoint and model configuration.",
         429: "Check your OpenAI rate limits and billing.",
       };
       return jsonResponse(502, {

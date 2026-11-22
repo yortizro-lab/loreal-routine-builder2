@@ -71,7 +71,8 @@ for (const [name, loadHandler] of [
       assert.equal(options.headers.Authorization, "Bearer test-key");
       const { model, tools, instructions, input } = JSON.parse(options.body);
       assert.equal(model, "gpt-4.1");
-      assert.equal(tools[0].type, "web_search");
+      assert.equal(tools, undefined);
+      assert.doesNotMatch(instructions, /web search/);
       assert.match(input[0].content, /Sunscreen/);
       assert.match(instructions, /skincare, haircare, makeup/);
       assert.match(instructions, /L'Oreal Paris and Maybelline/);
@@ -195,4 +196,38 @@ test("Worker uses the configured OpenAI model", async () => {
     OPENAI_MODEL: "configured-model",
   });
   assert.equal(response.status, 200);
+});
+
+test("Worker enables web search only when ENABLE_WEB_SEARCH is true", async () => {
+  const worker = require("../src/index.ts").default;
+  global.fetch = async (_url, options) => {
+    const body = JSON.parse(options.body);
+    assert.deepEqual(body.tools, [{ type: "web_search" }]);
+    assert.match(body.instructions, /web search/);
+    return Response.json(openAiResult);
+  };
+  const response = await worker.fetch(request(), { OPENAI_API_KEY: "test-key", ENABLE_WEB_SEARCH: "true" });
+  assert.equal(response.status, 200);
+});
+
+test("Worker logs sanitized OpenAI error details and reports model_not_found", async () => {
+  const worker = require("../src/index.ts").default;
+  const logs = [];
+  const originalError = console.error;
+  console.error = (...args) => logs.push(args.join(" "));
+  try {
+    global.fetch = async () => Response.json(
+      { error: { message: "The model `bad-model` does not exist. key test-key", type: "invalid_request_error", code: "model_not_found" } },
+      { status: 404 },
+    );
+    const response = await worker.fetch(request(), { OPENAI_API_KEY: "test-key", OPENAI_MODEL: "bad-model" });
+    assert.equal(response.status, 502);
+    const error = (await response.json()).error;
+    assert.match(error, /OpenAI API error \(404\) \[model_not_found\].*OPENAI_MODEL/);
+    const log = logs.join("\n");
+    assert.match(log, /status=404 code=model_not_found type=invalid_request_error model=bad-model url=https:\/\/api\.openai\.com\/v1\/responses/);
+    assert.doesNotMatch(log, /test-key/);
+  } finally {
+    console.error = originalError;
+  }
 });
