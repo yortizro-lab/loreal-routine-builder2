@@ -471,14 +471,23 @@ floatingChatForm.addEventListener("submit", async (event) => {
   floatingChatMessages.appendChild(loadingMessage);
   floatingChatMessages.scrollTop = floatingChatMessages.scrollHeight;
 
-  try {
-    const response = await fetch(routineApiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ products: selectedProducts, conversation: floatingConversation }),
-    });
-    const data = await readRoutineResponse(response, "Unable to answer that question.");
+try {
+  const response = await fetch(routineApiUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      products: selectedProducts,
+      conversation: floatingConversation,
+    }),
+  });
 
+  const data = await readRoutineResponse(
+    response,
+    "Unable to answer that question."
+  );
+  
     loadingMessage.remove();
     const assistantTurn = document.createElement("div");
     assistantTurn.className = "floating-chat-turn assistant";
