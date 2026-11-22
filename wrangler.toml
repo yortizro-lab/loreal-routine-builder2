@@ -1,4 +1,5 @@
-name = "lorealroutinebuilder-com"
+name = # wrangler.toml
+name = 'loreal-routine'
 compatibility_date = "2026-11-20"
 main = "src/index.ts"
 
