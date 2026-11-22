@@ -1,5 +1,5 @@
 {
-  "name": "https://loreal-routine-builder2.yortizro.workers.dev/",
+  "name": "https://loreal-routine-builder2.yortizro.workers.dev/api/routine",
   "private": true,
   "type": "module",
   "engines": {
