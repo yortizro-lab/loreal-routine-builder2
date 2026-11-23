@@ -39,11 +39,15 @@ test("Worker root health check is safe and does not change other routes", async 
   const withoutKey = await worker.fetch(new Request("https://worker.example/"), {});
   assert.equal(withoutKey.status, 200);
   assert.deepEqual(await withoutKey.json(), { status: "ok" });
-  for (const [path, method] of [["/", "POST"], ["/unknown", "GET"], ["/api/routine", "GET"]]) {
+  for (const [path, method] of [["/", "POST"], ["/unknown", "GET"]]) {
     const response = await worker.fetch(new Request(`https://worker.example${path}`, { method }), env);
     assert.equal(response.status, 405);
     assert.deepEqual(await response.json(), { error: "Method not allowed." });
   }
+
+  const apiReadiness = await worker.fetch(new Request("https://worker.example/api/routine"), env);
+  assert.equal(apiReadiness.status, 200);
+  assert.deepEqual(await apiReadiness.json(), { status: "ok" });
 });
 
 test("extracts raw Responses API text and preserves SDK-style fallback", () => {
@@ -139,8 +143,10 @@ for (const [name, loadHandler] of [
     assert.equal(success.status, 200);
     assert.equal(success.headers.get("access-control-allow-origin"), "https://site.pages.dev");
     const method = await send("GET", "https://site.pages.dev");
-    assert.equal(method.status, 405);
+    assert.equal(method.status, 200);
+    assert.deepEqual(await method.json(), { status: "ok" });
     assert.equal(method.headers.get("access-control-allow-origin"), "https://site.pages.dev");
+    assert.match(method.headers.get("allow"), /GET/);
     const blocked = await send("POST", "https://other.example", "{}");
     assert.equal(blocked.status, 403);
     assert.equal(blocked.headers.get("access-control-allow-origin"), null);
@@ -184,6 +190,18 @@ for (const [name, loadHandler] of [
       console.error = originalError;
     }
   });
+
+test("Worker normalizes an API key before building the Authorization header", async () => {
+  const worker = require("../src/index.ts").default;
+  global.fetch = async (_url, options) => {
+    assert.equal(options.headers.Authorization, "Bearer test-key");
+    return Response.json(openAiResult);
+  };
+  const response = await worker.fetch(request(), {
+    OPENAI_API_KEY: "  Bearer test-key\n",
+  });
+  assert.equal(response.status, 200);
+});
 
 test("Worker uses the configured OpenAI model", async () => {
   const worker = require("../src/index.ts").default;

@@ -25,10 +25,10 @@ export default {
     if (url.pathname === "/api/routine") {
       const origin = request.headers.get("Origin");
       const allowedOrigin = origin && (origin === url.origin || origin === env.ALLOWED_ORIGIN) ? origin : null;
-      const corsHeaders = new Headers({ Vary: "Origin", Allow: "POST, OPTIONS" });
+      const corsHeaders = new Headers({ Vary: "Origin", Allow: "GET, HEAD, POST, OPTIONS" });
       if (allowedOrigin) {
         corsHeaders.set("Access-Control-Allow-Origin", allowedOrigin);
-        corsHeaders.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+        corsHeaders.set("Access-Control-Allow-Methods", "GET, HEAD, POST, OPTIONS");
         corsHeaders.set("Access-Control-Allow-Headers", "Content-Type");
       }
 
@@ -37,6 +37,8 @@ export default {
         response = jsonResponse(403, { error: "Origin not allowed." });
       } else if (request.method === "OPTIONS") {
         response = new Response(null, { status: 204 });
+      } else if (request.method === "GET" || request.method === "HEAD") {
+        response = jsonResponse(200, { status: "ok" });
       } else if (request.method !== "POST") {
         response = jsonResponse(405, { error: "Method not allowed." });
       } else {
@@ -52,7 +54,8 @@ export default {
 
 async function generateRoutine(request: Request, env: Env): Promise<Response> {
   try {
-    if (!env.OPENAI_API_KEY) {
+    const apiKey = normalizeApiKey(env.OPENAI_API_KEY);
+    if (!apiKey) {
       return jsonResponse(500, { error: "OpenAI API access is not configured." });
     }
 
@@ -121,7 +124,7 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           model,
@@ -212,9 +215,15 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
   }
 }
 
+function normalizeApiKey(value: string | undefined): string {
+  return (value || "").trim().replace(/^Bearer\s+/i, "").trim();
+}
+
 function sanitizeForLog(text: string, env: Env): string {
   let out = text;
-  if (env.OPENAI_API_KEY) out = out.split(env.OPENAI_API_KEY).join("[REDACTED]");
+  for (const secret of [env.OPENAI_API_KEY, normalizeApiKey(env.OPENAI_API_KEY)]) {
+    if (secret) out = out.split(secret).join("[REDACTED]");
+  }
   return out
     .replace(/sk-[A-Za-z0-9_-]{8,}/g, "[REDACTED]")
     .replace(/Bearer\s+[A-Za-z0-9._~+\/=-]+/gi, "Bearer [REDACTED]");
