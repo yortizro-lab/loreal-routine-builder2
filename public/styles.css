@@ -915,6 +915,12 @@ main {
   font-weight: 400;
 }
 
+.floating-chat-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.floating-chat-refresh,
 .floating-chat-close {
   width: 32px;
   height: 32px;

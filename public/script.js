@@ -190,6 +190,7 @@ const floatingChatClose = document.querySelector("#floating-chat-close");
 const floatingChatForm = document.querySelector("#floating-chat-form");
 const floatingChatInput = document.querySelector("#floating-chat-input");
 const floatingChatMessages = document.querySelector("#floating-chat-messages");
+const floatingChatRefresh = document.querySelector("#floating-chat-refresh");
 let conversation = [];
 let floatingConversation = [];
 let activeCategory = "All";
@@ -212,7 +213,7 @@ const translations = {
     send: "Send", beautyLabel: "LOREAL BEAUTY", assistantTitle: "Beauty Routine Assistant",
     assistantGreeting: "Hi! Ask me about skincare, haircare, makeup, or your selected routine.",
     assistantLabel: "Ask the beauty assistant", assistantPlaceholder: "Ask a question...",
-    chat: "Chat", sources: "Sources", thinking: "Thinking...", generating: "Generating...", shopProduct: "Shop Product",
+    chat: "Chat", refreshChat: "Refresh chat", sources: "Sources", thinking: "Thinking...", generating: "Generating...", shopProduct: "Shop Product",
     selectedCount: (count) => `${count} selected`, noSelected: "No products selected",
     senderYou: "You", senderAssistant: "Assistant",
   },
@@ -227,7 +228,7 @@ const translations = {
     send: "Enviar", beautyLabel: "LOREAL BEAUTY", assistantTitle: "Asistente de rutinas de belleza",
     assistantGreeting: "¡Hola! Pregúntame sobre el cuidado de la piel, el cabello, el maquillaje o tu rutina seleccionada.",
     assistantLabel: "Pregunta al asistente de belleza", assistantPlaceholder: "Haz una pregunta...",
-    chat: "Chat", sources: "Fuentes", thinking: "Pensando...", generating: "Creando...", shopProduct: "Ver producto",
+    chat: "Chat", refreshChat: "Actualizar chat", sources: "Fuentes", thinking: "Pensando...", generating: "Creando...", shopProduct: "Ver producto",
     selectedCount: (count) => `${count} seleccionados`, noSelected: "No hay productos seleccionados",
     senderYou: "Tú", senderAssistant: "Asistente",
   },
@@ -242,7 +243,7 @@ const translations = {
     send: "发送", beautyLabel: "LOREAL BEAUTY", assistantTitle: "美妆流程助手",
     assistantGreeting: "你好！可以询问护肤、护发、化妆或您选择的流程。",
     assistantLabel: "询问美妆助手", assistantPlaceholder: "请输入问题...",
-    chat: "聊天", sources: "来源", thinking: "正在思考...", generating: "正在生成...", shopProduct: "查看产品",
+    chat: "聊天", refreshChat: "刷新聊天", sources: "来源", thinking: "正在思考...", generating: "正在生成...", shopProduct: "查看产品",
     selectedCount: (count) => `已选择 ${count} 件`, noSelected: "未选择任何产品",
     senderYou: "你", senderAssistant: "助手",
   },
@@ -257,7 +258,7 @@ const translations = {
     send: "Enviar", beautyLabel: "LOREAL BEAUTY", assistantTitle: "Assistente de rotinas de beleza",
     assistantGreeting: "Olá! Pergunte sobre cuidados com a pele, cabelo, maquiagem ou sua rotina selecionada.",
     assistantLabel: "Pergunte ao assistente de beleza", assistantPlaceholder: "Faça uma pergunta...",
-    chat: "Chat", sources: "Fontes", thinking: "Pensando...", generating: "Gerando...", shopProduct: "Ver produto",
+    chat: "Chat", refreshChat: "Atualizar chat", sources: "Fontes", thinking: "Pensando...", generating: "Gerando...", shopProduct: "Ver produto",
     selectedCount: (count) => `${count} selecionados`, noSelected: "Nenhum produto selecionado",
     senderYou: "Você", senderAssistant: "Assistente",
   },
@@ -276,6 +277,11 @@ function applyLanguage(language) {
   document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
     const key = element.dataset.i18nPlaceholder;
     element.placeholder = translations[currentLanguage][key];
+  });
+  document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
+    const key = element.dataset.i18nAriaLabel;
+    element.setAttribute("aria-label", translations[currentLanguage][key]);
+    element.title = translations[currentLanguage][key];
   });
   renderCategoryFilters();
   renderBrandFilters();
@@ -666,6 +672,25 @@ floatingChatToggle.addEventListener("click", () => {
 });
 
 floatingChatClose.addEventListener("click", () => setFloatingChatOpen(false));
+
+function resetFloatingChat() {
+  floatingConversation = [];
+  floatingChatInput.value = "";
+  floatingChatMessages.replaceChildren();
+
+  const turn = document.createElement("div");
+  turn.className = "floating-chat-turn assistant";
+  const sender = document.createElement("span");
+  sender.className = "floating-chat-sender";
+  sender.textContent = translations[currentLanguage].senderAssistant;
+  const message = document.createElement("p");
+  message.className = "floating-chat-message assistant";
+  message.textContent = translations[currentLanguage].assistantGreeting;
+  turn.append(sender, message);
+  floatingChatMessages.appendChild(turn);
+}
+
+floatingChatRefresh.addEventListener("click", resetFloatingChat);
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && !floatingChatPanel.hidden) setFloatingChatOpen(false);
