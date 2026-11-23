@@ -66,6 +66,11 @@ test("routine instructions separate skincare, haircare, and makeup", () => {
   assert.match(instructions, /group the instructions separately by area: Skincare, Haircare, Makeup, or Fragrance/);
   assert.match(instructions, /shampoo, conditioner, treatment, then styling/);
   assert.match(instructions, /preparation, complexion, color, eyes, and finishing/);
+
+  const catalogInstructions = getRoutineInstructions([], true);
+  assert.match(catalogInstructions, /official L'Oréal, Maybelline, and CeraVe product catalogs/);
+  assert.match(catalogInstructions, /lorealparisusa\.com, maybelline\.com, cerave\.com/);
+  assert.match(catalogInstructions, /availability may vary by country and retailer/);
 });
 
 test("Worker forwards the complete conversation without dropping old or long messages", async () => {

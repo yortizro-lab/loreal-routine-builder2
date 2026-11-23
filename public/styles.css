@@ -878,6 +878,18 @@ main {
   font-style: italic;
 }
 
+.floating-chat-citations {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.floating-chat-citations a {
+  color: #684b20;
+  font-weight: 700;
+}
+
 .floating-chat-form {
   display: grid;
   grid-template-columns: 1fr 42px;

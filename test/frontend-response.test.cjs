@@ -6,8 +6,9 @@ const vm = require("node:vm");
 
 function loadApp(fetch, apiUrl) {
   const elements = new Map();
-  function element() {
+  function element(tagName = "div") {
     return {
+      tagName: tagName.toUpperCase(),
       value: "",
       children: [],
       listeners: {},
@@ -115,10 +116,10 @@ test("follow-ups retain the generated routine and complete prior conversation", 
   assert.ok(finalCall.conversation.some((message) => message.content === "Routine response 14"));
 });
 
-test("AI-generated routines appear in both chat windows", async () => {
+test("AI-generated routines render bold headings in both chat windows", async () => {
   const { elements } = loadApp(async () => Response.json({
-    routine: "Morning: cleanse, moisturize, and apply sunscreen.",
-    citations: [],
+    routine: "**Daily Maintenance:**\nCleanse, moisturize, and apply sunscreen.",
+    citations: [{ title: "CeraVe", url: "https://www.cerave.com/" }],
   }));
   elements.get("#floating-chat-input").value = "Build it";
 
@@ -126,9 +127,13 @@ test("AI-generated routines appear in both chat windows", async () => {
   await elements.get("#floating-chat-form").listeners.submit({ preventDefault() {} });
 
   const mainTurn = elements.get("#chat-messages").children.find((child) => child.className === "chat-turn assistant");
-  const floatingTurn = elements.get("#floating-chat-messages").children.find((child) => child.className === "floating-chat-turn assistant" && child.children[1]?.textContent?.startsWith("Morning:"));
-  assert.equal(mainTurn.children[1].textContent, "Morning: cleanse, moisturize, and apply sunscreen.");
-  assert.equal(floatingTurn.children[1].textContent, "Morning: cleanse, moisturize, and apply sunscreen.");
+  const floatingTurn = elements.get("#floating-chat-messages").children.find((child) => child.className === "floating-chat-turn assistant" && child.children[1]?.children[0]?.textContent === "Daily Maintenance:");
+  assert.equal(mainTurn.children[1].children[0].tagName, "STRONG");
+  assert.equal(mainTurn.children[1].children[0].textContent, "Daily Maintenance:");
+  assert.equal(floatingTurn.children[1].children[0].tagName, "STRONG");
+  assert.equal(floatingTurn.children[1].children[0].textContent, "Daily Maintenance:");
+  const floatingSources = elements.get("#floating-chat-messages").children.find((child) => child.className === "floating-chat-citations");
+  assert.equal(floatingSources.children[1].href, "https://www.cerave.com/");
 });
 
 test("all chat entry points show a useful error for an HTML gateway response", async () => {

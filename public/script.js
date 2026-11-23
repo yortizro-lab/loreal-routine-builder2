@@ -285,6 +285,22 @@ function applyLanguage(language) {
 
 languageSelect.addEventListener("change", () => applyLanguage(languageSelect.value));
 
+function appendFormattedMessage(element, text) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
+  if (parts.length === 1) {
+    element.textContent = text;
+    return;
+  }
+
+  element.textContent = "";
+  parts.forEach((part) => {
+    const isBold = part.startsWith("**") && part.endsWith("**");
+    const node = document.createElement(isBold ? "strong" : "span");
+    node.textContent = isBold ? part.slice(2, -2) : part;
+    element.appendChild(node);
+  });
+}
+
 function appendChatResponse(routine, citations = []) {
   const turn = document.createElement("div");
   turn.className = "chat-turn assistant";
@@ -293,7 +309,7 @@ function appendChatResponse(routine, citations = []) {
   sender.textContent = translations[currentLanguage].senderAssistant;
   const message = document.createElement("p");
   message.className = "chat-message";
-  message.textContent = routine;
+  appendFormattedMessage(message, routine);
   turn.append(sender, message);
   chatMessages.appendChild(turn);
 
@@ -620,10 +636,28 @@ try {
     assistantSender.textContent = translations[currentLanguage].senderAssistant;
     const assistantMessage = document.createElement("p");
     assistantMessage.className = "floating-chat-message assistant";
-    assistantMessage.textContent = data.routine;
+    appendFormattedMessage(assistantMessage, data.routine);
     assistantTurn.append(assistantSender, assistantMessage);
     floatingChatMessages.appendChild(assistantTurn);
     floatingConversation.push({ role: "assistant", content: data.routine });
+
+    if (Array.isArray(data.citations) && data.citations.length > 0) {
+      const sources = document.createElement("p");
+      sources.className = "floating-chat-citations";
+      const label = document.createElement("span");
+      label.textContent = `${translations[currentLanguage].sources}: `;
+      sources.appendChild(label);
+      data.citations.forEach((citation, index) => {
+        const link = document.createElement("a");
+        link.href = citation.url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = citation.title;
+        sources.appendChild(link);
+        if (index < data.citations.length - 1) sources.appendChild(document.createTextNode(" · "));
+      });
+      floatingChatMessages.appendChild(sources);
+    }
   } catch (error) {
     loadingMessage.remove();
     const errorMessage = document.createElement("p");
