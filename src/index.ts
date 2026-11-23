@@ -60,7 +60,7 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
     }
 
     let payload: {
-      products?: Array<{ name?: string; category?: string }>;
+      products?: Array<{ name?: string; category?: string; area?: string; brand?: string; description?: string }>;
       conversation?: ChatMessage[];
     };
     try {
@@ -90,6 +90,9 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
       .map((product) => ({
         name: (product.name || "").slice(0, 200),
         category: typeof product.category === "string" ? product.category.slice(0, 100) : "Product",
+        area: typeof product.area === "string" ? product.area.slice(0, 50) : "Skincare",
+        brand: typeof product.brand === "string" ? product.brand.slice(0, 50) : "L'Oréal",
+        description: typeof product.description === "string" ? product.description.slice(0, 1_000) : "",
       }));
 
     const priorMessages = conversation
@@ -98,10 +101,9 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
         (message.role === "user" || message.role === "assistant") &&
         typeof message.content === "string"
       )
-      .slice(-12)
       .map((message) => ({
         role: message.role,
-        content: message.content.slice(0, 2_000),
+        content: message.content,
       }));
 
     const input = [

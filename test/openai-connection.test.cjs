@@ -1,6 +1,6 @@
 const assert = require("node:assert/strict");
 const { after, test } = require("node:test");
-const { getOutputText } = require("../src/openai-response.cjs");
+const { getOutputText, getRoutineInstructions } = require("../src/openai-response.cjs");
 
 const originalFetch = global.fetch;
 after(() => { global.fetch = originalFetch; });
@@ -23,7 +23,13 @@ const openAiResult = {
   ],
 };
 
-function request(body = JSON.stringify({ products: [{ name: "Sunscreen" }] })) {
+function request(body = JSON.stringify({ products: [{
+  name: "Sunscreen",
+  brand: "CeraVe",
+  category: "Sunscreen",
+  area: "Skincare",
+  description: "Mineral SPF 50 for daily facial protection.",
+}] })) {
   return new Request("https://example.com/api/routine", { method: "POST", body });
 }
 
@@ -48,6 +54,37 @@ test("Worker root health check is safe and does not change other routes", async 
   const apiReadiness = await worker.fetch(new Request("https://worker.example/api/routine"), env);
   assert.equal(apiReadiness.status, 200);
   assert.deepEqual(await apiReadiness.json(), { status: "ok" });
+});
+
+test("routine instructions separate skincare, haircare, and makeup", () => {
+  const instructions = getRoutineInstructions([
+    { name: "Shampoo", category: "Hair Shampoo", area: "Haircare" },
+    { name: "Mascara", category: "Mascara", area: "Makeup" },
+  ], false);
+  assert.match(instructions, /only about the generated routine or related skincare, haircare, makeup, fragrance/);
+  assert.match(instructions, /complete conversation history/);
+  assert.match(instructions, /group the instructions separately by area: Skincare, Haircare, Makeup, or Fragrance/);
+  assert.match(instructions, /shampoo, conditioner, treatment, then styling/);
+  assert.match(instructions, /preparation, complexion, color, eyes, and finishing/);
+});
+
+test("Worker forwards the complete conversation without dropping old or long messages", async () => {
+  const worker = require("../src/index.ts").default;
+  const conversation = Array.from({ length: 16 }, (_, index) => ({
+    role: index % 2 === 0 ? "user" : "assistant",
+    content: index === 0 ? "x".repeat(2_500) : `Message ${index}`,
+  }));
+  global.fetch = async (_url, options) => {
+    const body = JSON.parse(options.body);
+    assert.deepEqual(body.input, conversation);
+    return Response.json(openAiResult);
+  };
+  const response = await worker.fetch(new Request("https://example.com/api/routine", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ products: [], conversation }),
+  }), { OPENAI_API_KEY: "test-key" });
+  assert.equal(response.status, 200);
 });
 
 test("extracts raw Responses API text and preserves SDK-style fallback", () => {
@@ -78,8 +115,11 @@ for (const [name, loadHandler] of [
       assert.equal(tools, undefined);
       assert.doesNotMatch(instructions, /web search/);
       assert.match(input[0].content, /Sunscreen/);
+      assert.match(input[0].content, /CeraVe/);
+      assert.match(input[0].content, /Mineral SPF 50 for daily facial protection/);
+      assert.match(instructions, /Mineral SPF 50 for daily facial protection/);
       assert.match(instructions, /skincare, haircare, makeup/);
-      assert.match(instructions, /L'Oreal Paris and Maybelline/);
+      assert.match(instructions, /L'Oreal Paris, Maybelline, and CeraVe/);
       return Response.json(openAiResult);
     };
     let response = await handler(request());

@@ -40,6 +40,17 @@ function loadApp(fetch, apiUrl) {
   return { context, elements };
 }
 
+test("catalog offers skincare, haircare, and makeup products", () => {
+  const { context } = loadApp();
+  const products = vm.runInContext("products", context);
+  for (const area of ["Haircare", "Makeup"]) {
+    assert.ok(products.filter((product) => product.area === area).length >= 3);
+  }
+  for (const brand of ["L'Oréal", "Maybelline", "CeraVe"]) {
+    assert.ok(products.some((product) => product.brand === brand));
+  }
+});
+
 test("routine responses preserve JSON errors and handle non-JSON or malformed errors", async () => {
   const { context } = loadApp();
   const read = vm.runInContext("readRoutineResponse", context);
@@ -68,11 +79,56 @@ test("all chat entry points POST the expected JSON to the configured endpoint", 
     assert.equal(call.url, "https://worker.example/api/routine");
     assert.equal(call.options.method, "POST");
     assert.equal(call.options.headers["Content-Type"], "application/json");
-    assert.equal(call.body.products[0].name, "UV Defender Daily Invisible Fluid");
+    assert.deepEqual(call.body.products[0], {
+      name: "CeraVe Hydrating Mineral Sunscreen SPF 50",
+      brand: "CeraVe",
+      category: "Sunscreen",
+      area: "Skincare",
+      description: "A mineral broad-spectrum facial sunscreen with SPF 50, ceramides, and niacinamide that hydrates while helping protect skin from the sun.",
+    });
     assert.ok(Array.isArray(call.body.conversation));
   }
   assert.equal(calls[1].body.conversation.at(-1).content, "Main question");
   assert.equal(calls[2].body.conversation.at(-1).content, "Floating question");
+});
+
+test("follow-ups retain the generated routine and complete prior conversation", async () => {
+  const calls = [];
+  let responseNumber = 0;
+  const { elements } = loadApp(async (url, options) => {
+    calls.push(JSON.parse(options.body));
+    responseNumber += 1;
+    return Response.json({ routine: `Routine response ${responseNumber}`, citations: [] });
+  });
+
+  await elements.get("#generate-button").listeners.click();
+  for (let index = 0; index < 14; index += 1) {
+    elements.get("#chat-input").value = `Question ${index}`;
+    await elements.get("#chat-form").listeners.submit({ preventDefault() {} });
+  }
+
+  const finalCall = calls.at(-1);
+  assert.equal(finalCall.conversation.length, 28);
+  assert.equal(finalCall.conversation[0].content, "Routine response 1");
+  assert.equal(finalCall.conversation.at(-1).content, "Question 13");
+  assert.ok(finalCall.conversation.some((message) => message.content === "Question 0"));
+  assert.ok(finalCall.conversation.some((message) => message.content === "Routine response 14"));
+});
+
+test("AI-generated routines appear in both chat windows", async () => {
+  const { elements } = loadApp(async () => Response.json({
+    routine: "Morning: cleanse, moisturize, and apply sunscreen.",
+    citations: [],
+  }));
+  elements.get("#floating-chat-input").value = "Build it";
+
+  await elements.get("#generate-button").listeners.click();
+  await elements.get("#floating-chat-form").listeners.submit({ preventDefault() {} });
+
+  const mainTurn = elements.get("#chat-messages").children.find((child) => child.className === "chat-turn assistant");
+  const floatingTurn = elements.get("#floating-chat-messages").children.find((child) => child.className === "floating-chat-turn assistant" && child.children[1]?.textContent?.startsWith("Morning:"));
+  assert.equal(mainTurn.children[1].textContent, "Morning: cleanse, moisturize, and apply sunscreen.");
+  assert.equal(floatingTurn.children[1].textContent, "Morning: cleanse, moisturize, and apply sunscreen.");
 });
 
 test("all chat entry points show a useful error for an HTML gateway response", async () => {

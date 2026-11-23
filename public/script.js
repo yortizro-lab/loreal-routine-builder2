@@ -3,6 +3,7 @@ const routineApiUrl = document.querySelector('meta[name="routine-api-url"]')?.co
 const products = [
   {
     id: "revitalift-serum",
+    brand: "L'Oréal",
     name: "Revitalift 1.5% Pure Hyaluronic Acid Serum",
     category: "Serum",
     image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=85",
@@ -10,13 +11,15 @@ const products = [
   },
   {
     id: "micellar-water",
-    name: "Micellar Cleansing Water",
+    brand: "CeraVe",
+    name: "CeraVe Hydrating Facial Cleanser",
     category: "Cleanser",
     image: "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?auto=format&fit=crop&w=400&q=85",
-    description: "A gentle no-rinse cleanser that lifts makeup, oil, and impurities while respecting the skin's natural moisture barrier.",
+    description: "A fragrance-free, non-foaming facial cleanser with ceramides and hyaluronic acid that removes dirt and makeup while supporting the skin barrier.",
   },
   {
     id: "bright-reveal",
+    brand: "L'Oréal",
     name: "Bright Reveal Dark Spot Exfoliant",
     category: "Exfoliant",
     image: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=400&q=85",
@@ -24,13 +27,15 @@ const products = [
   },
   {
     id: "uv-fluid",
-    name: "UV Defender Daily Invisible Fluid",
+    brand: "CeraVe",
+    name: "CeraVe Hydrating Mineral Sunscreen SPF 50",
     category: "Sunscreen",
     image: "https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=400&q=85",
-    description: "A lightweight broad-spectrum daily facial sunscreen that helps protect skin from UV damage without a heavy finish.",
+    description: "A mineral broad-spectrum facial sunscreen with SPF 50, ceramides, and niacinamide that hydrates while helping protect skin from the sun.",
   },
   {
     id: "revitalift-cream",
+    brand: "L'Oréal",
     name: "Revitalift Anti-Wrinkle Firming Cream",
     category: "Moisturizer",
     image: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=85",
@@ -38,37 +43,116 @@ const products = [
   },
   {
     id: "glycolic-cleanser",
-    name: "Glycolic-BHA Daily Peeling Toner",
+    brand: "CeraVe",
+    name: "CeraVe Resurfacing Retinol Serum",
     category: "Treatment",
     image: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=400&q=85",
-    description: "A resurfacing toner with glycolic acid and BHA to help refine pores and improve skin texture. Use gradually and avoid mixing with additional exfoliating actives.",
+    description: "A resurfacing serum with encapsulated retinol, ceramides, and niacinamide to help refine the look of pores and uneven skin texture.",
+  },
+  {
+    id: "elvive-shampoo",
+    brand: "L'Oréal",
+    name: "Elvive Hyaluron Moisture Shampoo",
+    category: "Hair Shampoo",
+    area: "Haircare",
+    image: "https://images.unsplash.com/photo-1626015365107-9f6e7c0d45a0?auto=format&fit=crop&w=400&q=85",
+    description: "A hydrating shampoo for cleansing dry hair while helping it feel smoother and easier to manage.",
+  },
+  {
+    id: "elvive-conditioner",
+    brand: "L'Oréal",
+    name: "Elvive Hyaluron Moisture Conditioner",
+    category: "Hair Conditioner",
+    area: "Haircare",
+    image: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=400&q=85",
+    description: "A moisture-focused conditioner to soften lengths after shampooing and help reduce tangles.",
+  },
+  {
+    id: "elvive-leave-in",
+    brand: "L'Oréal",
+    name: "Elvive Total Repair 5 Protein Recharge Leave-In",
+    category: "Hair Treatment",
+    area: "Haircare",
+    image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=400&q=85",
+    description: "A leave-in care treatment for damaged-feeling hair; apply as directed before styling.",
+  },
+  {
+    id: "prime-lab-primer",
+    brand: "L'Oréal",
+    name: "Prime Lab Up to 24H Pore Minimizer Primer",
+    category: "Makeup Primer",
+    area: "Makeup",
+    image: "https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&w=400&q=85",
+    description: "A smoothing primer that prepares skin for makeup and helps create an even-looking finish.",
+  },
+  {
+    id: "infallible-foundation",
+    brand: "Maybelline",
+    name: "Fit Me Matte + Poreless Foundation",
+    category: "Foundation",
+    area: "Makeup",
+    image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=400&q=85",
+    description: "A lightweight liquid foundation for normal to oily skin that provides a natural matte finish and helps minimize the appearance of pores.",
+  },
+  {
+    id: "lash-paradise-mascara",
+    brand: "Maybelline",
+    name: "Lash Sensational Sky High Mascara",
+    category: "Mascara",
+    area: "Makeup",
+    image: "https://images.unsplash.com/photo-1631214540553-ff044a3a67b5?auto=format&fit=crop&w=400&q=85",
+    description: "A lengthening mascara with a flexible brush designed to lift, define, and extend lashes.",
   },
 ];
+
+const brandSites = {
+  "L'Oréal": "https://www.lorealparisusa.com/",
+  Maybelline: "https://www.maybelline.com/",
+  CeraVe: "https://www.cerave.com/",
+};
 
 const productTranslations = {
   es: {
     "revitalift-serum": ["Sérum Revitalift Ácido Hialurónico Puro 1.5%", "Sérum", "Un sérum hidratante formulado con ácido hialurónico puro al 1.5% para ayudar a rellenar la piel y reducir líneas finas."],
-    "micellar-water": ["Agua Micelar Limpiadora", "Limpiador", "Un limpiador suave sin aclarado que elimina maquillaje, grasa e impurezas mientras respeta la barrera natural de la piel."],
+    "micellar-water": ["Limpiador Facial Hidratante CeraVe", "Limpiador", "Un limpiador suave y sin perfume para eliminar suciedad y maquillaje respetando la barrera de la piel."],
     "bright-reveal": ["Bright Reveal Exfoliante para Manchas Oscuras", "Exfoliante", "Un tratamiento exfoliante que ayuda a mejorar el tono de la piel y reduce visiblemente manchas oscuras y textura irregular."],
-    "uv-fluid": ["UV Defender Fluido Invisible Diario", "Protector solar", "Un protector solar facial ligero de amplio espectro que ayuda a proteger la piel del daño UV con un acabado invisible."],
+    "uv-fluid": ["Protector Solar Mineral Hidratante CeraVe SPF 50", "Protector solar", "Un protector solar mineral hidratante de amplio espectro para la piel facial."],
     "revitalift-cream": ["Crema Reafirmante Antarrugas Revitalift", "Hidratante", "Una crema suavizante que ayuda a reafirmar la piel y reduce visiblemente la apariencia de arrugas."],
-    "glycolic-cleanser": ["Tónico Peel Diario con Ácido Glicólico-BHA", "Tratamiento", "Un tónico renovador con ácido glicólico y BHA que ayuda a perfeccionar los poros y mejorar la textura."],
+    "glycolic-cleanser": ["Sérum Resurfacing con Retinol CeraVe", "Tratamiento", "Un sérum con retinol encapsulado que ayuda a mejorar la apariencia de textura y poros."],
+    "elvive-shampoo": ["Champú Hidratante Elvive Hyaluron", "Champú capilar", "Un champú hidratante que limpia el cabello seco y ayuda a dejarlo suave y manejable."],
+    "elvive-conditioner": ["Acondicionador Hidratante Elvive Hyaluron", "Acondicionador capilar", "Un acondicionador que suaviza las puntas después del champú y ayuda a desenredar."],
+    "elvive-leave-in": ["Tratamiento Sin Aclarado Elvive Total Repair 5", "Tratamiento capilar", "Un cuidado sin aclarado para cabello con aspecto dañado; usar según las indicaciones antes del peinado."],
+    "prime-lab-primer": ["Primer Prime Lab Minimizador de Poros Hasta 24H", "Primer de maquillaje", "Un primer que alisa la piel, la prepara para el maquillaje y ayuda a crear un acabado uniforme."],
+    "infallible-foundation": ["Base Fit Me Matte + Poreless de Maybelline", "Base de maquillaje", "Una base de cobertura natural diseñada para matificar y mejorar la apariencia de los poros."],
+    "lash-paradise-mascara": ["Máscara Lash Sensational Sky High de Maybelline", "Máscara", "Una máscara diseñada para alargar y elevar las pestañas con una definición flexible."],
   },
   zh: {
     "revitalift-serum": ["Revitalift 1.5% 纯玻尿酸精华", "精华液", "含有1.5%纯玻尿酸的保湿精华，可帮助饱满肌肤、减少细纹外观。"],
-    "micellar-water": ["卸妆洁肤水", "洁面", "温和无需冲洗的卸妆水，可清除彩妆、油脂和杂质，同时呵护肌肤天然屏障。"],
+    "micellar-water": ["CeraVe 保湿洁面乳", "洁面", "温和无香洁面乳，可清洁污垢和彩妆，同时呵护肌肤屏障。"],
     "bright-reveal": ["亮白焕采暗斑去角质产品", "去角质", "有助于改善肤色、淡化暗斑并提升肌肤质感的焕肤护理。"],
-    "uv-fluid": ["UV Defender 隐形防晒日间乳", "防晒", "轻薄广谱防晒乳，可帮助抵御紫外线损伤，妆感清透。"],
+    "uv-fluid": ["CeraVe 保湿矿物防晒 SPF 50", "防晒", "适用于面部的保湿广谱矿物防晒产品。"],
     "revitalift-cream": ["Revitalift 抗皱紧致面霜", "保湿霜", "帮助提升肌肤紧致感，并淡化皱纹外观的平滑型保湿霜。"],
-    "glycolic-cleanser": ["乙醇酸-BHA 日常焕肤爽肤水", "护理", "含乙醇酸和BHA的焕肤水，可帮助细致毛孔并改善肌肤质地。"],
+    "glycolic-cleanser": ["CeraVe 焕肤视黄醇精华", "护理", "含包裹式视黄醇的精华，可改善肌肤纹理和毛孔外观。"],
+    "elvive-shampoo": ["Elvive 玻尿酸保湿洗发水", "洗发水", "保湿洗发水，清洁干燥发丝并令头发更柔顺、易于打理。"],
+    "elvive-conditioner": ["Elvive 玻尿酸保湿护发素", "护发素", "用于洗发后柔顺发丝并帮助减少打结的护发素。"],
+    "elvive-leave-in": ["Elvive Total Repair 5 免洗修护乳", "护发护理", "适用于受损发质的免洗护理，造型前按说明使用。"],
+    "prime-lab-primer": ["Prime Lab 24小时控毛孔妆前乳", "妆前乳", "柔滑妆前乳，为上妆做准备并帮助打造均匀妆感。"],
+    "infallible-foundation": ["Maybelline Fit Me Matte + Poreless 粉底", "粉底", "自然遮瑕粉底，可控油并改善毛孔外观。"],
+    "lash-paradise-mascara": ["Maybelline Lash Sensational Sky High 睫毛膏", "睫毛膏", "用于拉长、提拉并灵活分明睫毛的睫毛膏。"],
   },
   pt: {
     "revitalift-serum": ["Sérum Revitalift Ácido Hialurônico Puro 1.5%", "Sérum", "Um sérum hidratante com 1.5% de ácido hialurônico puro para ajudar a preencher a pele e suavizar linhas finas."],
-    "micellar-water": ["Água Micelar de Limpeza", "Limpeza", "Um limpador suave que remove maquiagem, oleosidade e impurezas sem enxágue, respeitando a barreira natural da pele."],
+    "micellar-water": ["Limpador Facial Hidratante CeraVe", "Limpeza", "Um limpador suave e sem fragrância para remover sujeira e maquiagem respeitando a barreira da pele."],
     "bright-reveal": ["Bright Reveal Esfoliante para Manchas", "Esfoliante", "Um tratamento esfoliante que ajuda a uniformizar o tom da pele e reduzir visivelmente manchas escuras e textura irregular."],
-    "uv-fluid": ["UV Defender Fluido Invisível Diário", "Protetor solar", "Um protetor solar facial leve de amplo espectro que ajuda a proteger contra danos UV com acabamento discreto."],
+    "uv-fluid": ["Protetor Solar Mineral Hidratante CeraVe FPS 50", "Protetor solar", "Um protetor solar mineral hidratante de amplo espectro para o rosto."],
     "revitalift-cream": ["Creme Firmador Antirrugas Revitalift", "Hidratante", "Um creme suavizante que ajuda a firmar a pele e reduzir visivelmente a aparência de rugas."],
-    "glycolic-cleanser": ["Tônico Peeling Diário Glicólico-BHA", "Tratamento", "Um tônico renovador com ácido glicólico e BHA que ajuda a refinar poros e melhorar a textura da pele."],
+    "glycolic-cleanser": ["Sérum Resurfacing Retinol CeraVe", "Tratamento", "Um sérum com retinol encapsulado que ajuda a melhorar a aparência da textura e dos poros."],
+    "elvive-shampoo": ["Shampoo Hidratante Elvive Hyaluron", "Shampoo capilar", "Um shampoo hidratante que limpa cabelos ressecados e ajuda a deixá-los macios e fáceis de cuidar."],
+    "elvive-conditioner": ["Condicionador Hidratante Elvive Hyaluron", "Condicionador capilar", "Um condicionador que suaviza os fios depois do shampoo e ajuda a desembaraçar."],
+    "elvive-leave-in": ["Tratamento Sem Enxágue Elvive Total Repair 5", "Tratamento capilar", "Um cuidado sem enxágue para cabelos com aspecto danificado; aplique como indicado antes de modelar."],
+    "prime-lab-primer": ["Primer Prime Lab Minimizador de Poros Até 24H", "Primer de maquiagem", "Um primer alisante que prepara a pele para maquiagem e ajuda a criar um acabamento uniforme."],
+    "infallible-foundation": ["Base Fit Me Matte + Poreless Maybelline", "Base", "Uma base de cobertura natural criada para matificar e melhorar a aparência dos poros."],
+    "lash-paradise-mascara": ["Máscara Lash Sensational Sky High Maybelline", "Máscara", "Uma máscara criada para alongar e levantar os cílios com definição flexível."],
   },
 };
 
@@ -97,6 +181,7 @@ const dialogDescription = document.querySelector("#dialog-description");
 const dialogClose = document.querySelector("#dialog-close");
 const productSearch = document.querySelector("#product-search");
 const categoryFilters = document.querySelector("#category-filters");
+const brandFilters = document.querySelector("#brand-filters");
 const noResults = document.querySelector("#no-results");
 const languageSelect = document.querySelector("#language-select");
 const floatingChatToggle = document.querySelector("#floating-chat-toggle");
@@ -108,6 +193,7 @@ const floatingChatMessages = document.querySelector("#floating-chat-messages");
 let conversation = [];
 let floatingConversation = [];
 let activeCategory = "All";
+let activeBrand = "All";
 const flippedProducts = new Set();
 
 const storageKey = "loreal-routine-selected-products";
@@ -116,8 +202,8 @@ let currentLanguage = localStorage.getItem(languageStorageKey) || "en";
 
 const translations = {
   en: {
-    eyebrow: "SKINCARE ROUTINE", heroTitle: "Build your perfect routine",
-    intro: "Choose the products you use, and we'll organize them into a simple daily routine.",
+    eyebrow: "BEAUTY ROUTINE", heroTitle: "Build your perfect routine",
+    intro: "Choose your skincare, haircare, or makeup products, and we'll organize them into a routine in the right order.",
     step: "STEP 1 OF 2", chooseProducts: "Choose your products", clearAll: "Clear all",
     searchProducts: "Search products", searchPlaceholder: "Search by name or keyword",
     noResults: "No matching products found.", selectedProducts: "Your selected products",
@@ -131,8 +217,8 @@ const translations = {
     senderYou: "You", senderAssistant: "Assistant",
   },
   es: {
-    eyebrow: "RUTINA DE CUIDADO DE LA PIEL", heroTitle: "Crea tu rutina perfecta",
-    intro: "Elige los productos que usas y te ayudaremos a organizarlos en una rutina diaria sencilla.",
+    eyebrow: "RUTINA DE BELLEZA", heroTitle: "Crea tu rutina perfecta",
+    intro: "Elige tus productos de cuidado facial, capilar o maquillaje y los organizaremos en el orden correcto.",
     step: "PASO 1 DE 2", chooseProducts: "Elige tus productos", clearAll: "Borrar todo",
     searchProducts: "Buscar productos", searchPlaceholder: "Busca por nombre o palabra clave",
     noResults: "No se encontraron productos.", selectedProducts: "Tus productos seleccionados",
@@ -146,8 +232,8 @@ const translations = {
     senderYou: "Tú", senderAssistant: "Asistente",
   },
   zh: {
-    eyebrow: "护肤日常", heroTitle: "打造您的专属护肤流程",
-    intro: "选择您使用的产品，我们会将它们整理成简单的日常护肤步骤。",
+    eyebrow: "美妆流程", heroTitle: "打造您的专属美妆流程",
+    intro: "选择护肤、护发或彩妆产品，我们会将它们整理成正确的日常使用顺序。",
     step: "第 1 步，共 2 步", chooseProducts: "选择您的产品", clearAll: "全部清除",
     searchProducts: "搜索产品", searchPlaceholder: "按名称或关键词搜索",
     noResults: "未找到匹配的产品。", selectedProducts: "您选择的产品",
@@ -161,8 +247,8 @@ const translations = {
     senderYou: "你", senderAssistant: "助手",
   },
   pt: {
-    eyebrow: "ROTINA DE CUIDADOS COM A PELE", heroTitle: "Crie sua rotina perfeita",
-    intro: "Escolha os produtos que você usa e nós os organizaremos em uma rotina diária simples.",
+    eyebrow: "ROTINA DE BELEZA", heroTitle: "Crie sua rotina perfeita",
+    intro: "Escolha produtos de cuidados com a pele, cabelos ou maquiagem, e nós os organizaremos na ordem correta.",
     step: "ETAPA 1 DE 2", chooseProducts: "Escolha seus produtos", clearAll: "Limpar tudo",
     searchProducts: "Pesquisar produtos", searchPlaceholder: "Pesquise por nome ou palavra-chave",
     noResults: "Nenhum produto correspondente.", selectedProducts: "Produtos selecionados",
@@ -192,6 +278,7 @@ function applyLanguage(language) {
     element.placeholder = translations[currentLanguage][key];
   });
   renderCategoryFilters();
+  renderBrandFilters();
   renderProducts();
   renderSelection();
 }
@@ -280,15 +367,29 @@ function persistSelection() {
   localStorage.setItem(storageKey, JSON.stringify([...selected]));
 }
 
+function selectedProductsForRequest() {
+  return products
+    .filter((product) => selected.has(product.id))
+    .map((product) => {
+      const localized = localizedProduct(product);
+      return {
+        name: localized.name,
+        brand: product.brand,
+        category: localized.category,
+        area: product.area || "Skincare",
+        description: localized.description,
+      };
+    });
+}
+
 function renderCategoryFilters() {
-  const allLabel = { en: "All", es: "Todos", zh: "全部", pt: "Todos" }[currentLanguage];
   const categoryLabels = {
-    en: {},
-    es: { Serum: "Sérum", Cleanser: "Limpiador", Exfoliant: "Exfoliante", Sunscreen: "Protector solar", Moisturizer: "Hidratante", Treatment: "Tratamiento" },
-    zh: { Serum: "精华液", Cleanser: "洁面", Exfoliant: "去角质", Sunscreen: "防晒", Moisturizer: "保湿霜", Treatment: "护理" },
-    pt: { Serum: "Sérum", Cleanser: "Limpeza", Exfoliant: "Esfoliante", Sunscreen: "Protetor solar", Moisturizer: "Hidratante", Treatment: "Tratamento" },
+    en: { All: "All", Skincare: "Skincare", Haircare: "Haircare", Makeup: "Makeup" },
+    es: { All: "Todos", Skincare: "Piel", Haircare: "Cabello", Makeup: "Maquillaje" },
+    zh: { All: "全部", Skincare: "护肤", Haircare: "护发", Makeup: "彩妆" },
+    pt: { All: "Todos", Skincare: "Pele", Haircare: "Cabelos", Makeup: "Maquiagem" },
   };
-  const categories = ["All", ...new Set(products.map((product) => product.category))];
+  const categories = ["All", "Skincare", "Haircare", "Makeup"];
   categoryFilters.innerHTML = categories
     .map(
       (category) => `
@@ -298,10 +399,22 @@ function renderCategoryFilters() {
           data-category="${category}"
           aria-pressed="${activeCategory === category}"
         >
-          ${category === "All" ? allLabel : (categoryLabels[currentLanguage][category] || category)}
+          ${categoryLabels[currentLanguage][category]}
         </button>
       `,
     )
+    .join("");
+}
+
+function renderBrandFilters() {
+  const allLabel = { en: "All brands", es: "Todas las marcas", zh: "全部品牌", pt: "Todas as marcas" }[currentLanguage];
+  const brands = ["All", "L'Oréal", "Maybelline", "CeraVe"];
+  brandFilters.innerHTML = brands
+    .map((brand) => `
+      <button class="brand-filter${activeBrand === brand ? " active" : ""}" type="button" data-brand="${brand}" aria-pressed="${activeBrand === brand}">
+        ${brand === "All" ? allLabel : brand}
+      </button>
+    `)
     .join("");
 }
 
@@ -309,9 +422,11 @@ function getFilteredProducts() {
   const query = productSearch.value.trim().toLowerCase();
   return products.filter((product) => {
     const localized = localizedProduct(product);
-    const matchesCategory = activeCategory === "All" || product.category === activeCategory;
-    const searchableText = `${localized.name} ${localized.category} ${localized.description}`.toLowerCase();
-    return matchesCategory && (!query || searchableText.includes(query));
+    const productArea = product.area || "Skincare";
+    const matchesCategory = activeCategory === "All" || productArea === activeCategory;
+    const matchesBrand = activeBrand === "All" || product.brand === activeBrand;
+    const searchableText = `${localized.name} ${localized.category} ${localized.description} ${productArea} ${product.brand}`.toLowerCase();
+    return matchesCategory && matchesBrand && (!query || searchableText.includes(query));
   });
 }
 
@@ -336,7 +451,7 @@ function renderProducts() {
               >
                 <img class="product-image" src="${product.image}" alt="" />
                 <span class="product-meta">
-                  <span class="product-category">${localized.category}</span>
+                  <span class="product-category">${product.brand} · ${localized.category}</span>
                   <span class="product-name">${localized.name}</span>
                 </span>
               </button>
@@ -348,6 +463,7 @@ function renderProducts() {
               <span class="product-category">${localized.category}</span>
               <h3>${localized.name}</h3>
               <p>${localized.description}</p>
+              <a class="brand-site-link" href="${brandSites[product.brand]}" target="_blank" rel="noopener noreferrer">Visit ${product.brand}</a>
               <button class="details-toggle back-toggle" type="button" data-flip-id="${product.id}" aria-expanded="${flippedProducts.has(product.id)}">
                 ${flipBack} <span aria-hidden="true">↻</span>
               </button>
@@ -420,6 +536,14 @@ clearSelectionButton.addEventListener("click", () => {
 
 productSearch.addEventListener("input", renderProducts);
 
+brandFilters.addEventListener("click", (event) => {
+  const filter = event.target.closest("[data-brand]");
+  if (!filter) return;
+  activeBrand = filter.dataset.brand;
+  renderBrandFilters();
+  renderProducts();
+});
+
 categoryFilters.addEventListener("click", (event) => {
   const filter = event.target.closest("[data-category]");
   if (!filter) return;
@@ -450,7 +574,7 @@ floatingChatForm.addEventListener("submit", async (event) => {
   const question = floatingChatInput.value.trim();
   if (!question) return;
 
-  const selectedProducts = products.filter((product) => selected.has(product.id));
+  const selectedProducts = selectedProductsForRequest();
   floatingConversation.push({ role: "user", content: question });
   floatingChatInput.value = "";
 
@@ -544,7 +668,7 @@ selectedList.addEventListener("click", (event) => {
 generateButton.addEventListener("click", async () => {
   if (selected.size === 0) return;
 
-  const selectedProducts = products.filter((product) => selected.has(product.id));
+  const selectedProducts = selectedProductsForRequest();
   conversation = [];
   chat.hidden = false;
   const creatingText = {
@@ -597,7 +721,7 @@ chatForm.addEventListener("submit", async (event) => {
   const question = chatInput.value.trim();
   if (!question || chatSend.disabled) return;
 
-  const selectedProducts = products.filter((product) => selected.has(product.id));
+  const selectedProducts = selectedProductsForRequest();
   conversation.push({ role: "user", content: question });
   chatInput.value = "";
 
