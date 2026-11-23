@@ -36,7 +36,7 @@ function loadApp(fetch, apiUrl) {
     setItem() {},
     removeItem() {},
   };
-  const context = vm.createContext({ document, localStorage, fetch, console: { error() {} }, SyntaxError });
+  const context = vm.createContext({ document, localStorage, fetch, URL, console: { error() {} }, SyntaxError });
   vm.runInContext(fs.readFileSync(path.join(__dirname, "../public/script.js"), "utf8"), context);
   return { context, elements };
 }
@@ -49,6 +49,10 @@ test("catalog offers skincare, haircare, and makeup products", () => {
   }
   for (const brand of ["L'Oréal", "Maybelline", "CeraVe"]) {
     assert.ok(products.some((product) => product.brand === brand));
+  }
+  const brandSites = vm.runInContext("brandSites", context);
+  for (const site of Object.values(brandSites)) {
+    assert.match(site, /^https:\/\//);
   }
 });
 
@@ -117,8 +121,15 @@ test("follow-ups retain the generated routine and complete prior conversation", 
 });
 
 test("AI-generated routines render bold headings in both chat windows", async () => {
+  const productUrl = "https://www.cerave.com/skincare/moisturizers/daily-moisturizing-lotion";
   const { elements } = loadApp(async () => Response.json({
-    routine: "**Daily Maintenance:**\nCleanse, moisturize, and apply sunscreen.",
+    routine: `**Daily Maintenance:**\nUse [CeraVe Daily Moisturizing Lotion](${productUrl}).`,
+    products: [{
+      name: "CeraVe Daily Moisturizing Lotion",
+      description: "Lightweight daily hydration.",
+      url: productUrl,
+      sourceUrl: productUrl,
+    }],
     citations: [{ title: "CeraVe", url: "https://www.cerave.com/" }],
   }));
   elements.get("#floating-chat-input").value = "Build it";
@@ -132,6 +143,17 @@ test("AI-generated routines render bold headings in both chat windows", async ()
   assert.equal(mainTurn.children[1].children[0].textContent, "Daily Maintenance:");
   assert.equal(floatingTurn.children[1].children[0].tagName, "STRONG");
   assert.equal(floatingTurn.children[1].children[0].textContent, "Daily Maintenance:");
+  const mainProducts = elements.get("#chat-messages").children.find((child) => child.className === "recommended-products");
+  const mainCard = mainProducts.children[1].children[0];
+  assert.equal(mainCard.children[0].children[0].href, productUrl);
+  assert.equal(mainCard.children[0].children[0].target, "_blank");
+  assert.equal(mainCard.children[0].children[0].rel, "noopener noreferrer");
+  assert.equal(mainCard.children[2].textContent, productUrl);
+  assert.equal(mainCard.children[3].textContent, "Shop Product");
+  const inlineProductLink = mainTurn.children[1].children.find((child) => child.className === "inline-product-link");
+  assert.equal(inlineProductLink.href, productUrl);
+  const floatingProducts = elements.get("#floating-chat-messages").children.find((child) => child.className === "recommended-products");
+  assert.equal(floatingProducts.children[1].children[0].children[3].textContent, "Shop Product");
   const floatingSources = elements.get("#floating-chat-messages").children.find((child) => child.className === "floating-chat-citations");
   assert.equal(floatingSources.children[1].href, "https://www.cerave.com/");
 });

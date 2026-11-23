@@ -197,7 +197,7 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
     for (const item of data.output || []) {
       for (const content of item.content || []) {
         for (const annotation of content.annotations || []) {
-          if (annotation.type === "url_citation" && annotation.url) {
+          if (annotation.type === "url_citation" && annotation.url && isWebUrl(annotation.url)) {
             if (!citations.some((citation) => citation.url === annotation.url)) {
               let title = "Source";
               try {
@@ -210,10 +210,32 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
       }
     }
 
-    return jsonResponse(200, { routine, citations });
+    const citedUrls = new Set(citations.map((citation) => citation.url));
+    const recommendedProducts: Array<{ name: string; description: string; url: string; sourceUrl: string }> = [];
+    const recommendationPattern = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\):?\s*([^\n]*)/g;
+    for (const match of routine.matchAll(recommendationPattern)) {
+      const [, name, url, description] = match;
+      if (!isWebUrl(url) || !citedUrls.has(url) || recommendedProducts.some((product) => product.url === url)) continue;
+      recommendedProducts.push({
+        name: name.slice(0, 200),
+        description: description.slice(0, 500),
+        url,
+        sourceUrl: url,
+      });
+    }
+
+    return jsonResponse(200, { routine, products: recommendedProducts, citations });
   } catch {
     console.error("Unable to generate a routine.");
     return jsonResponse(500, { error: "Unable to generate a routine. Check Worker logs." });
+  }
+}
+
+function isWebUrl(value: string): boolean {
+  try {
+    return ["http:", "https:"].includes(new URL(value).protocol);
+  } catch {
+    return false;
   }
 }
 

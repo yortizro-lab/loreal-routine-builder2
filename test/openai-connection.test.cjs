@@ -73,6 +73,32 @@ test("routine instructions separate skincare, haircare, and makeup", () => {
   assert.match(catalogInstructions, /availability may vary by country and retailer/);
 });
 
+test("Worker extracts only valid cited product recommendations", async () => {
+  const worker = require("../src/index.ts").default;
+  const productUrl = "https://www.cerave.com/skincare/moisturizers/daily-moisturizing-lotion";
+  global.fetch = async () => Response.json({
+    output: [{
+      type: "message",
+      content: [{
+        type: "output_text",
+        text: `[CeraVe Daily Moisturizing Lotion](${productUrl}): Lightweight daily hydration.\n[Fake Product](https://fake.example/product): Ignore this.`,
+        annotations: [
+          { type: "url_citation", url: productUrl, title: "CeraVe Daily Moisturizing Lotion" },
+        ],
+      }],
+    }],
+  });
+  const response = await worker.fetch(request(), { OPENAI_API_KEY: "test-key" });
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.deepEqual(body.products, [{
+    name: "CeraVe Daily Moisturizing Lotion",
+    description: "Lightweight daily hydration.",
+    url: productUrl,
+    sourceUrl: productUrl,
+  }]);
+});
+
 test("Worker forwards the complete conversation without dropping old or long messages", async () => {
   const worker = require("../src/index.ts").default;
   const conversation = Array.from({ length: 16 }, (_, index) => ({
@@ -131,6 +157,7 @@ for (const [name, loadHandler] of [
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), {
       routine: "Morning: apply sunscreen.",
+      products: [],
       citations: [{ title: "Guide", url: "https://example.com/guide" }],
     });
 

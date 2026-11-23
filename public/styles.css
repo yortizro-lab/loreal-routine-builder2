@@ -230,6 +230,11 @@ main {
   padding-top: 2px;
 }
 
+.brand-filter-group {
+  display: inline-flex;
+  align-items: stretch;
+}
+
 .brand-filter {
   min-height: 34px;
   border: 1px solid #d8d3c9;
@@ -247,6 +252,30 @@ main {
   border-color: #7e6038;
   background: #e9dfcc;
   color: #372b1a;
+}
+
+.brand-official-link {
+  width: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d8d3c9;
+  border-inline-start: 0;
+  border-radius: 0 4px 4px 0;
+  background: white;
+  color: #684b20;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.brand-filter-group .brand-filter {
+  border-radius: 4px 0 0 4px;
+}
+
+.brand-official-link:hover,
+.brand-official-link:focus-visible {
+  background: #684b20;
+  color: white;
 }
 
 .no-results {
@@ -691,6 +720,78 @@ main {
   text-underline-offset: 3px;
 }
 
+.inline-product-link {
+  color: #684b20;
+  font-weight: 700;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.recommended-products {
+  max-width: 820px;
+  margin: 18px 0;
+}
+
+.recommended-products h3 {
+  margin: 0 0 10px;
+  font-family: "Italiana", serif;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.recommended-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.recommended-product-card {
+  min-width: 0;
+  border: 1px solid #d8d3c9;
+  border-radius: 6px;
+  background: white;
+  padding: 14px;
+}
+
+.recommended-product-card h4 {
+  margin: 0 0 8px;
+  font-family: "Italiana", serif;
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.recommended-product-card h4 a {
+  color: var(--ink);
+}
+
+.recommended-product-description {
+  margin: 0 0 10px;
+  color: #514c43;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.recommended-product-url {
+  display: block;
+  overflow-wrap: anywhere;
+  margin-bottom: 12px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.recommended-product-action {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  color: white;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
 .chat-form {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -888,6 +989,22 @@ main {
 .floating-chat-citations a {
   color: #684b20;
   font-weight: 700;
+}
+
+.floating-chat-messages .recommended-products {
+  margin: 10px 0 14px;
+}
+
+.floating-chat-messages .recommended-products h3 {
+  font-size: 16px;
+}
+
+.floating-chat-messages .recommended-products-grid {
+  grid-template-columns: 1fr;
+}
+
+.floating-chat-messages .recommended-product-card {
+  padding: 12px;
 }
 
 .floating-chat-form {

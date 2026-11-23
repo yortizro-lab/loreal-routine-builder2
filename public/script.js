@@ -212,7 +212,7 @@ const translations = {
     send: "Send", beautyLabel: "LOREAL BEAUTY", assistantTitle: "Beauty Routine Assistant",
     assistantGreeting: "Hi! Ask me about skincare, haircare, makeup, or your selected routine.",
     assistantLabel: "Ask the beauty assistant", assistantPlaceholder: "Ask a question...",
-    chat: "Chat", sources: "Sources", thinking: "Thinking...", generating: "Generating...",
+    chat: "Chat", sources: "Sources", thinking: "Thinking...", generating: "Generating...", shopProduct: "Shop Product",
     selectedCount: (count) => `${count} selected`, noSelected: "No products selected",
     senderYou: "You", senderAssistant: "Assistant",
   },
@@ -227,7 +227,7 @@ const translations = {
     send: "Enviar", beautyLabel: "LOREAL BEAUTY", assistantTitle: "Asistente de rutinas de belleza",
     assistantGreeting: "¡Hola! Pregúntame sobre el cuidado de la piel, el cabello, el maquillaje o tu rutina seleccionada.",
     assistantLabel: "Pregunta al asistente de belleza", assistantPlaceholder: "Haz una pregunta...",
-    chat: "Chat", sources: "Fuentes", thinking: "Pensando...", generating: "Creando...",
+    chat: "Chat", sources: "Fuentes", thinking: "Pensando...", generating: "Creando...", shopProduct: "Ver producto",
     selectedCount: (count) => `${count} seleccionados`, noSelected: "No hay productos seleccionados",
     senderYou: "Tú", senderAssistant: "Asistente",
   },
@@ -242,7 +242,7 @@ const translations = {
     send: "发送", beautyLabel: "LOREAL BEAUTY", assistantTitle: "美妆流程助手",
     assistantGreeting: "你好！可以询问护肤、护发、化妆或您选择的流程。",
     assistantLabel: "询问美妆助手", assistantPlaceholder: "请输入问题...",
-    chat: "聊天", sources: "来源", thinking: "正在思考...", generating: "正在生成...",
+    chat: "聊天", sources: "来源", thinking: "正在思考...", generating: "正在生成...", shopProduct: "查看产品",
     selectedCount: (count) => `已选择 ${count} 件`, noSelected: "未选择任何产品",
     senderYou: "你", senderAssistant: "助手",
   },
@@ -257,7 +257,7 @@ const translations = {
     send: "Enviar", beautyLabel: "LOREAL BEAUTY", assistantTitle: "Assistente de rotinas de beleza",
     assistantGreeting: "Olá! Pergunte sobre cuidados com a pele, cabelo, maquiagem ou sua rotina selecionada.",
     assistantLabel: "Pergunte ao assistente de beleza", assistantPlaceholder: "Faça uma pergunta...",
-    chat: "Chat", sources: "Fontes", thinking: "Pensando...", generating: "Gerando...",
+    chat: "Chat", sources: "Fontes", thinking: "Pensando...", generating: "Gerando...", shopProduct: "Ver produto",
     selectedCount: (count) => `${count} selecionados`, noSelected: "Nenhum produto selecionado",
     senderYou: "Você", senderAssistant: "Assistente",
   },
@@ -285,23 +285,102 @@ function applyLanguage(language) {
 
 languageSelect.addEventListener("change", () => applyLanguage(languageSelect.value));
 
-function appendFormattedMessage(element, text) {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
-  if (parts.length === 1) {
-    element.textContent = text;
-    return;
+function isSafeWebUrl(value) {
+  try {
+    return ["http:", "https:"].includes(new URL(value).protocol);
+  } catch {
+    return false;
   }
+}
 
+function appendFormattedMessage(element, text, allowedUrls = []) {
+  const parts = text.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g).filter(Boolean);
   element.textContent = "";
+  const allowed = new Set(allowedUrls.filter(isSafeWebUrl));
+
   parts.forEach((part) => {
     const isBold = part.startsWith("**") && part.endsWith("**");
-    const node = document.createElement(isBold ? "strong" : "span");
-    node.textContent = isBold ? part.slice(2, -2) : part;
-    element.appendChild(node);
+    if (isBold) {
+      const strong = document.createElement("strong");
+      strong.textContent = part.slice(2, -2);
+      element.appendChild(strong);
+      return;
+    }
+
+    const link = part.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/);
+    if (link && allowed.has(link[2])) {
+      const anchor = document.createElement("a");
+      anchor.className = "inline-product-link";
+      anchor.href = link[2];
+      anchor.target = "_blank";
+      anchor.rel = "noopener noreferrer";
+      anchor.textContent = link[1];
+      element.appendChild(anchor);
+      return;
+    }
+
+    const textNode = document.createElement("span");
+    textNode.textContent = link ? link[1] : part;
+    element.appendChild(textNode);
   });
 }
 
-function appendChatResponse(routine, citations = []) {
+function appendProductRecommendations(container, recommendations = []) {
+  const validProducts = recommendations.filter((product) =>
+    product && typeof product.name === "string" && isSafeWebUrl(product.url)
+  );
+  if (validProducts.length === 0) return;
+
+  const section = document.createElement("section");
+  section.className = "recommended-products";
+  const heading = document.createElement("h3");
+  heading.textContent = { en: "Recommended products", es: "Productos recomendados", zh: "推荐产品", pt: "Produtos recomendados" }[currentLanguage];
+  section.appendChild(heading);
+
+  const grid = document.createElement("div");
+  grid.className = "recommended-products-grid";
+  validProducts.forEach((product) => {
+    const card = document.createElement("article");
+    card.className = "recommended-product-card";
+
+    const title = document.createElement("h4");
+    const titleLink = document.createElement("a");
+    titleLink.href = product.url;
+    titleLink.target = "_blank";
+    titleLink.rel = "noopener noreferrer";
+    titleLink.textContent = product.name;
+    title.appendChild(titleLink);
+    card.appendChild(title);
+
+    if (typeof product.description === "string" && product.description.trim()) {
+      const description = document.createElement("p");
+      description.className = "recommended-product-description";
+      description.textContent = product.description;
+      card.appendChild(description);
+    }
+
+    const visibleUrl = document.createElement("a");
+    visibleUrl.className = "recommended-product-url";
+    visibleUrl.href = product.url;
+    visibleUrl.target = "_blank";
+    visibleUrl.rel = "noopener noreferrer";
+    visibleUrl.textContent = product.url;
+    card.appendChild(visibleUrl);
+
+    const shopLink = document.createElement("a");
+    shopLink.className = "recommended-product-action";
+    shopLink.href = product.url;
+    shopLink.target = "_blank";
+    shopLink.rel = "noopener noreferrer";
+    shopLink.textContent = translations[currentLanguage].shopProduct;
+    card.appendChild(shopLink);
+    grid.appendChild(card);
+  });
+  section.appendChild(grid);
+  container.appendChild(section);
+}
+
+function appendChatResponse(routine, citations = [], recommendations = []) {
   const turn = document.createElement("div");
   turn.className = "chat-turn assistant";
   const sender = document.createElement("span");
@@ -309,9 +388,10 @@ function appendChatResponse(routine, citations = []) {
   sender.textContent = translations[currentLanguage].senderAssistant;
   const message = document.createElement("p");
   message.className = "chat-message";
-  appendFormattedMessage(message, routine);
+  appendFormattedMessage(message, routine, recommendations.map((product) => product.url));
   turn.append(sender, message);
   chatMessages.appendChild(turn);
+  appendProductRecommendations(chatMessages, recommendations);
 
   if (citations.length > 0) {
     const sources = document.createElement("div");
@@ -324,6 +404,7 @@ function appendChatResponse(routine, citations = []) {
 
     const list = document.createElement("ol");
     citations.forEach((citation) => {
+      if (!citation || !isSafeWebUrl(citation.url)) return;
       const item = document.createElement("li");
       const link = document.createElement("a");
       link.href = citation.url;
@@ -426,11 +507,16 @@ function renderBrandFilters() {
   const allLabel = { en: "All brands", es: "Todas las marcas", zh: "全部品牌", pt: "Todas as marcas" }[currentLanguage];
   const brands = ["All", "L'Oréal", "Maybelline", "CeraVe"];
   brandFilters.innerHTML = brands
-    .map((brand) => `
-      <button class="brand-filter${activeBrand === brand ? " active" : ""}" type="button" data-brand="${brand}" aria-pressed="${activeBrand === brand}">
+    .map((brand) => {
+      const filter = `<button class="brand-filter${activeBrand === brand ? " active" : ""}" type="button" data-brand="${brand}" aria-pressed="${activeBrand === brand}">
         ${brand === "All" ? allLabel : brand}
-      </button>
-    `)
+      </button>`;
+      if (brand === "All") return filter;
+      return `<span class="brand-filter-group">
+        ${filter}
+        <a class="brand-official-link" href="${brandSites[brand]}" target="_blank" rel="noopener noreferrer" aria-label="Visit ${brand} official website" title="Visit ${brand}">↗</a>
+      </span>`;
+    })
     .join("");
 }
 
@@ -636,10 +722,11 @@ try {
     assistantSender.textContent = translations[currentLanguage].senderAssistant;
     const assistantMessage = document.createElement("p");
     assistantMessage.className = "floating-chat-message assistant";
-    appendFormattedMessage(assistantMessage, data.routine);
+    appendFormattedMessage(assistantMessage, data.routine, (data.products || []).map((product) => product.url));
     assistantTurn.append(assistantSender, assistantMessage);
     floatingChatMessages.appendChild(assistantTurn);
     floatingConversation.push({ role: "assistant", content: data.routine });
+    appendProductRecommendations(floatingChatMessages, data.products);
 
     if (Array.isArray(data.citations) && data.citations.length > 0) {
       const sources = document.createElement("p");
@@ -648,6 +735,7 @@ try {
       label.textContent = `${translations[currentLanguage].sources}: `;
       sources.appendChild(label);
       data.citations.forEach((citation, index) => {
+        if (!citation || !isSafeWebUrl(citation.url)) return;
         const link = document.createElement("a");
         link.href = citation.url;
         link.target = "_blank";
@@ -725,7 +813,7 @@ generateButton.addEventListener("click", async () => {
     const data = await readRoutineResponse(response, "Unable to generate a routine.");
 
     chatMessages.innerHTML = "";
-    appendChatResponse(data.routine, data.citations);
+    appendChatResponse(data.routine, data.citations, data.products);
     conversation.push({ role: "assistant", content: data.routine });
     chat.scrollIntoView({ behavior: "smooth", block: "nearest" });
   } catch (error) {
@@ -786,7 +874,7 @@ chatForm.addEventListener("submit", async (event) => {
     const data = await readRoutineResponse(response, "Unable to answer that question.");
 
     loadingMessage.remove();
-    appendChatResponse(data.routine, data.citations);
+    appendChatResponse(data.routine, data.citations, data.products);
     conversation.push({ role: "assistant", content: data.routine });
   } catch (error) {
     loadingMessage.remove();
