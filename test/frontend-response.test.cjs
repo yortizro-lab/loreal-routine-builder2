@@ -47,7 +47,7 @@ test("catalog offers skincare, haircare, and makeup products", () => {
   for (const area of ["Haircare", "Makeup"]) {
     assert.ok(products.filter((product) => product.area === area).length >= 3);
   }
-  for (const brand of ["L'Oréal", "Maybelline", "CeraVe"]) {
+  for (const brand of ["L'Oréal Paris", "Maybelline New York", "CeraVe"]) {
     assert.ok(products.some((product) => product.brand === brand));
   }
   const brandSites = vm.runInContext("brandSites", context);
