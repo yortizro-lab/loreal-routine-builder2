@@ -852,17 +852,12 @@ const brandSites = {
   "e.l.f. Cosmetics": "https://www.elfcosmetics.com/",
 };
 
-// Brands and categories the AI assistant can discover products from via web search.
-const discoveryBrands = [
-  "L'Oréal Paris", "CeraVe", "Maybelline New York", "Neutrogena", "La Roche-Posay",
-  "The Ordinary", "NYX Professional Makeup", "Olay", "Garnier", "e.l.f. Cosmetics",
-];
+// Categories the AI assistant can discover products from via web search.
 const discoveryCategories = [
   "Cleansers", "Moisturizers", "Serums", "Sunscreens", "Toners",
   "Exfoliants", "Eye creams", "Masks", "Foundations", "Concealers",
   "Mascara", "Lip products",
 ];
-let discoveryCategory = "";
 
 const productTranslations = {
   es: {
@@ -934,7 +929,6 @@ const dialogDescription = document.querySelector("#dialog-description");
 const dialogClose = document.querySelector("#dialog-close");
 const productSearch = document.querySelector("#product-search");
 const categoryFilters = document.querySelector("#category-filters");
-const brandFilters = document.querySelector("#brand-filters");
 const noResults = document.querySelector("#no-results");
 const languageSelect = document.querySelector("#language-select");
 const floatingChatToggle = document.querySelector("#floating-chat-toggle");
@@ -944,8 +938,6 @@ const floatingChatForm = document.querySelector("#floating-chat-form");
 const floatingChatInput = document.querySelector("#floating-chat-input");
 const floatingChatMessages = document.querySelector("#floating-chat-messages");
 const floatingChatRefresh = document.querySelector("#floating-chat-refresh");
-const discoveryCategoriesEl = document.querySelector("#discovery-categories");
-const discoverySubmit = document.querySelector("#discovery-submit");
 let conversation = [];
 let floatingConversation = [];
 let activeCategory = "All";
@@ -1043,10 +1035,8 @@ function applyLanguage(language) {
     element.title = translations[currentLanguage][key];
   });
   renderCategoryFilters();
-  renderBrandFilters();
   renderProducts();
   renderSelection();
-  renderDiscoveryFilters();
 }
 
 languageSelect.addEventListener("change", () => applyLanguage(languageSelect.value));
@@ -1315,23 +1305,6 @@ function renderCategoryFilters() {
     .join("");
 }
 
-function renderBrandFilters() {
-  const allLabel = { en: "All brands", es: "Todas las marcas", zh: "全部品牌", pt: "Todas as marcas" }[currentLanguage];
-  const brands = ["All", ...discoveryBrands];
-  brandFilters.innerHTML = brands
-    .map((brand) => {
-      const filter = `<button class="brand-filter${activeBrand === brand ? " active" : ""}" type="button" data-brand="${brand}" aria-pressed="${activeBrand === brand}">
-        ${brand === "All" ? allLabel : brand}
-      </button>`;
-      if (brand === "All") return filter;
-      return `<span class="brand-filter-group">
-        ${filter}
-        <a class="brand-official-link" href="${brandSites[brand]}" target="_blank" rel="noopener noreferrer" aria-label="Visit ${brand} official website" title="Visit ${brand}">↗</a>
-      </span>`;
-    })
-    .join("");
-}
-
 function getFilteredProducts() {
   const query = productSearch.value.trim().toLowerCase();
   return products.filter((product) => {
@@ -1449,14 +1422,6 @@ clearSelectionButton.addEventListener("click", () => {
 });
 
 productSearch.addEventListener("input", renderProducts);
-
-brandFilters.addEventListener("click", (event) => {
-  const filter = event.target.closest("[data-brand]");
-  if (!filter) return;
-  activeBrand = filter.dataset.brand;
-  renderBrandFilters();
-  renderProducts();
-});
 
 categoryFilters.addEventListener("click", (event) => {
   const filter = event.target.closest("[data-category]");
@@ -1591,28 +1556,6 @@ try {
     floatingChatMessages.scrollTop = floatingChatMessages.scrollHeight;
   }
 }
-
-function renderDiscoveryFilters() {
-  if (!discoveryCategoriesEl) return;
-  discoveryCategoriesEl.innerHTML = discoveryCategories
-    .map((category) => `<button class="discovery-chip${discoveryCategory === category ? " active" : ""}" type="button" data-discovery-category="${category}" aria-pressed="${discoveryCategory === category}">${category}</button>`)
-    .join("");
-}
-
-function discoveryQuery() {
-  if (discoveryCategory) return `Show me ${discoveryCategory} across your brands, with prices and working product links when available.`;
-  return "Recommend some popular beauty products with prices and working product links when available.";
-}
-
-discoveryCategoriesEl?.addEventListener("click", (event) => {
-  const chip = event.target.closest("[data-discovery-category]");
-  if (!chip) return;
-  const category = chip.dataset.discoveryCategory;
-  discoveryCategory = discoveryCategory === category ? "" : category;
-  renderDiscoveryFilters();
-});
-
-discoverySubmit?.addEventListener("click", () => submitFloatingQuestion(discoveryQuery()));
 
 grid.addEventListener("click", (event) => {
   const flipButton = event.target.closest("[data-flip-id]");
