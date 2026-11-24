@@ -121,14 +121,14 @@ test("follow-ups retain the generated routine and complete prior conversation", 
 });
 
 test("AI-generated routines render bold headings in both chat windows", async () => {
-  const productUrl = "https://www.cerave.com/skincare/moisturizers/daily-moisturizing-lotion";
+  const productUrl = "https://www.cerave.com/skincare/sunscreen/hydrating-mineral-sunscreen-face-lotion-spf-50";
   const { elements } = loadApp(async () => Response.json({
-    routine: `**Daily Maintenance:**\nUse [CeraVe Daily Moisturizing Lotion](${productUrl}).`,
+    routine: `**Daily Maintenance:**\nUse [CeraVe Hydrating Mineral Sunscreen SPF 50](${productUrl}).`,
     products: [{
-      name: "CeraVe Daily Moisturizing Lotion",
+      id: "uv-fluid",
+      name: "CeraVe Hydrating Mineral Sunscreen SPF 50",
       description: "Lightweight daily hydration.",
       url: productUrl,
-      sourceUrl: productUrl,
     }],
     citations: [{ title: "CeraVe", url: "https://www.cerave.com/" }],
   }));
@@ -145,15 +145,21 @@ test("AI-generated routines render bold headings in both chat windows", async ()
   assert.equal(floatingTurn.children[1].children[0].textContent, "Daily Maintenance:");
   const mainProducts = elements.get("#chat-messages").children.find((child) => child.className === "recommended-products");
   const mainCard = mainProducts.children[1].children[0];
-  assert.equal(mainCard.children[0].children[0].href, productUrl);
-  assert.equal(mainCard.children[0].children[0].target, "_blank");
-  assert.equal(mainCard.children[0].children[0].rel, "noopener noreferrer");
-  assert.equal(mainCard.children[2].textContent, productUrl);
-  assert.equal(mainCard.children[3].textContent, "Shop Product");
+  // Catalog-backed card carries an image, brand label, title link, category/price meta, description, and shop button.
+  assert.equal(mainCard.children[0].tagName, "IMG");
+  assert.equal(mainCard.children.find((child) => child.className === "recommended-product-brand").textContent, "CeraVe");
+  const titleLink = mainCard.children.find((child) => child.tagName === "H4").children[0];
+  assert.equal(titleLink.href, productUrl);
+  assert.equal(titleLink.target, "_blank");
+  assert.equal(titleLink.rel, "noopener noreferrer");
+  const meta = mainCard.children.find((child) => child.className === "recommended-product-meta");
+  assert.equal(meta.children.find((span) => span.className === "recommended-product-price").textContent, "$19.99");
+  assert.equal(mainCard.children.find((child) => child.className === "recommended-product-description").textContent, "Lightweight daily hydration.");
+  assert.equal(mainCard.children.find((child) => child.className === "recommended-product-action").textContent, "Shop Product");
   const inlineProductLink = mainTurn.children[1].children.find((child) => child.className === "inline-product-link");
   assert.equal(inlineProductLink.href, productUrl);
   const floatingProducts = elements.get("#floating-chat-messages").children.find((child) => child.className === "recommended-products");
-  assert.equal(floatingProducts.children[1].children[0].children[3].textContent, "Shop Product");
+  assert.equal(floatingProducts.children[1].children[0].children.find((child) => child.className === "recommended-product-action").textContent, "Shop Product");
   const floatingSources = elements.get("#floating-chat-messages").children.find((child) => child.className === "floating-chat-citations");
   assert.equal(floatingSources.children[1].href, "https://www.cerave.com/");
 });

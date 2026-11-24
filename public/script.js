@@ -6,6 +6,7 @@ const products = [
     brand: "L'Oréal",
     name: "Revitalift 1.5% Pure Hyaluronic Acid Serum",
     category: "Serum",
+    price: "$29.99",
     image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=85",
     description: "A hydrating serum formulated with 1.5% pure hyaluronic acid to help plump the look of skin and reduce the appearance of fine lines.",
   },
@@ -14,6 +15,7 @@ const products = [
     brand: "CeraVe",
     name: "CeraVe Hydrating Facial Cleanser",
     category: "Cleanser",
+    price: "$15.99",
     image: "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?auto=format&fit=crop&w=400&q=85",
     description: "A fragrance-free, non-foaming facial cleanser with ceramides and hyaluronic acid that removes dirt and makeup while supporting the skin barrier.",
   },
@@ -22,6 +24,7 @@ const products = [
     brand: "L'Oréal",
     name: "Bright Reveal Dark Spot Exfoliant",
     category: "Exfoliant",
+    price: "$24.99",
     image: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=400&q=85",
     description: "An exfoliating treatment designed to help improve skin tone and visibly reduce dark spots and uneven texture.",
   },
@@ -30,6 +33,7 @@ const products = [
     brand: "CeraVe",
     name: "CeraVe Hydrating Mineral Sunscreen SPF 50",
     category: "Sunscreen",
+    price: "$19.99",
     image: "https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=400&q=85",
     description: "A mineral broad-spectrum facial sunscreen with SPF 50, ceramides, and niacinamide that hydrates while helping protect skin from the sun.",
   },
@@ -38,6 +42,7 @@ const products = [
     brand: "L'Oréal",
     name: "Revitalift Anti-Wrinkle Firming Cream",
     category: "Moisturizer",
+    price: "$26.99",
     image: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=85",
     description: "A smoothing moisturizer that helps firm the feel of skin and visibly soften the appearance of wrinkles.",
   },
@@ -46,6 +51,7 @@ const products = [
     brand: "CeraVe",
     name: "CeraVe Resurfacing Retinol Serum",
     category: "Treatment",
+    price: "$21.99",
     image: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=400&q=85",
     description: "A resurfacing serum with encapsulated retinol, ceramides, and niacinamide to help refine the look of pores and uneven skin texture.",
   },
@@ -54,6 +60,7 @@ const products = [
     brand: "L'Oréal",
     name: "Elvive Hyaluron Moisture Shampoo",
     category: "Hair Shampoo",
+    price: "$7.99",
     area: "Haircare",
     image: "https://images.unsplash.com/photo-1626015365107-9f6e7c0d45a0?auto=format&fit=crop&w=400&q=85",
     description: "A hydrating shampoo for cleansing dry hair while helping it feel smoother and easier to manage.",
@@ -63,6 +70,7 @@ const products = [
     brand: "L'Oréal",
     name: "Elvive Hyaluron Moisture Conditioner",
     category: "Hair Conditioner",
+    price: "$7.99",
     area: "Haircare",
     image: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=400&q=85",
     description: "A moisture-focused conditioner to soften lengths after shampooing and help reduce tangles.",
@@ -72,6 +80,7 @@ const products = [
     brand: "L'Oréal",
     name: "Elvive Total Repair 5 Protein Recharge Leave-In",
     category: "Hair Treatment",
+    price: "$9.99",
     area: "Haircare",
     image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=400&q=85",
     description: "A leave-in care treatment for damaged-feeling hair; apply as directed before styling.",
@@ -81,6 +90,7 @@ const products = [
     brand: "L'Oréal",
     name: "Prime Lab Up to 24H Pore Minimizer Primer",
     category: "Makeup Primer",
+    price: "$15.99",
     area: "Makeup",
     image: "https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&w=400&q=85",
     description: "A smoothing primer that prepares skin for makeup and helps create an even-looking finish.",
@@ -90,6 +100,7 @@ const products = [
     brand: "Maybelline",
     name: "Fit Me Matte + Poreless Foundation",
     category: "Foundation",
+    price: "$8.99",
     area: "Makeup",
     image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=400&q=85",
     description: "A lightweight liquid foundation for normal to oily skin that provides a natural matte finish and helps minimize the appearance of pores.",
@@ -99,6 +110,7 @@ const products = [
     brand: "Maybelline",
     name: "Lash Sensational Sky High Mascara",
     category: "Mascara",
+    price: "$12.99",
     area: "Makeup",
     image: "https://images.unsplash.com/photo-1631214540553-ff044a3a67b5?auto=format&fit=crop&w=400&q=85",
     description: "A lengthening mascara with a flexible brush designed to lift, define, and extend lashes.",
@@ -107,9 +119,29 @@ const products = [
 
 const brandSites = {
   "L'Oréal": "https://www.lorealparisusa.com/",
-  Maybelline: "https://www.maybelline.com/",
   CeraVe: "https://www.cerave.com/",
+  Maybelline: "https://www.maybelline.com/",
+  Neutrogena: "https://www.neutrogena.com/",
+  "La Roche-Posay": "https://www.laroche-posay.us/",
+  "The Ordinary": "https://theordinary.com/",
+  "NYX Professional Makeup": "https://www.nyxcosmetics.com/",
+  Olay: "https://www.olay.com/",
+  Garnier: "https://www.garnierusa.com/",
+  "e.l.f. Cosmetics": "https://www.elfcosmetics.com/",
 };
+
+// Brands and categories the AI assistant can discover products from via web search.
+const discoveryBrands = [
+  "L'Oréal Paris", "CeraVe", "Maybelline New York", "Neutrogena", "La Roche-Posay",
+  "The Ordinary", "NYX Professional Makeup", "Olay", "Garnier", "e.l.f. Cosmetics",
+];
+const discoveryCategories = [
+  "Cleansers", "Moisturizers", "Serums", "Sunscreens", "Toners",
+  "Exfoliants", "Eye creams", "Masks", "Foundations", "Concealers",
+  "Mascara", "Lip products",
+];
+let discoveryBrand = "";
+let discoveryCategory = "";
 
 const productTranslations = {
   es: {
@@ -191,6 +223,9 @@ const floatingChatForm = document.querySelector("#floating-chat-form");
 const floatingChatInput = document.querySelector("#floating-chat-input");
 const floatingChatMessages = document.querySelector("#floating-chat-messages");
 const floatingChatRefresh = document.querySelector("#floating-chat-refresh");
+const discoveryBrandsEl = document.querySelector("#discovery-brands");
+const discoveryCategoriesEl = document.querySelector("#discovery-categories");
+const discoverySubmit = document.querySelector("#discovery-submit");
 let conversation = [];
 let floatingConversation = [];
 let activeCategory = "All";
@@ -214,6 +249,7 @@ const translations = {
     assistantGreeting: "Hi! Ask me about skincare, haircare, makeup, or your selected routine.",
     assistantLabel: "Ask the beauty assistant", assistantPlaceholder: "Ask a question...",
     chat: "Chat", refreshChat: "Refresh chat", sources: "Sources", thinking: "Thinking...", generating: "Generating...", shopProduct: "Shop Product",
+    discoverLabel: "Discover products by brand and category", discoverFind: "Find products",
     selectedCount: (count) => `${count} selected`, noSelected: "No products selected",
     senderYou: "You", senderAssistant: "Assistant",
   },
@@ -229,6 +265,7 @@ const translations = {
     assistantGreeting: "¡Hola! Pregúntame sobre el cuidado de la piel, el cabello, el maquillaje o tu rutina seleccionada.",
     assistantLabel: "Pregunta al asistente de belleza", assistantPlaceholder: "Haz una pregunta...",
     chat: "Chat", refreshChat: "Actualizar chat", sources: "Fuentes", thinking: "Pensando...", generating: "Creando...", shopProduct: "Ver producto",
+    discoverLabel: "Descubre productos por marca y categoría", discoverFind: "Buscar productos",
     selectedCount: (count) => `${count} seleccionados`, noSelected: "No hay productos seleccionados",
     senderYou: "Tú", senderAssistant: "Asistente",
   },
@@ -244,6 +281,7 @@ const translations = {
     assistantGreeting: "你好！可以询问护肤、护发、化妆或您选择的流程。",
     assistantLabel: "询问美妆助手", assistantPlaceholder: "请输入问题...",
     chat: "聊天", refreshChat: "刷新聊天", sources: "来源", thinking: "正在思考...", generating: "正在生成...", shopProduct: "查看产品",
+    discoverLabel: "按品牌和类别发现产品", discoverFind: "查找产品",
     selectedCount: (count) => `已选择 ${count} 件`, noSelected: "未选择任何产品",
     senderYou: "你", senderAssistant: "助手",
   },
@@ -259,6 +297,7 @@ const translations = {
     assistantGreeting: "Olá! Pergunte sobre cuidados com a pele, cabelo, maquiagem ou sua rotina selecionada.",
     assistantLabel: "Pergunte ao assistente de beleza", assistantPlaceholder: "Faça uma pergunta...",
     chat: "Chat", refreshChat: "Atualizar chat", sources: "Fontes", thinking: "Pensando...", generating: "Gerando...", shopProduct: "Ver produto",
+    discoverLabel: "Descubra produtos por marca e categoria", discoverFind: "Buscar produtos",
     selectedCount: (count) => `${count} selecionados`, noSelected: "Nenhum produto selecionado",
     senderYou: "Você", senderAssistant: "Assistente",
   },
@@ -287,6 +326,7 @@ function applyLanguage(language) {
   renderBrandFilters();
   renderProducts();
   renderSelection();
+  renderDiscoveryFilters();
 }
 
 languageSelect.addEventListener("change", () => applyLanguage(languageSelect.value));
@@ -332,9 +372,22 @@ function appendFormattedMessage(element, text, allowedUrls = []) {
 }
 
 function appendProductRecommendations(container, recommendations = []) {
-  const validProducts = recommendations.filter((product) =>
-    product && typeof product.name === "string" && isSafeWebUrl(product.url)
-  );
+  const validProducts = recommendations
+    .filter((product) => product && typeof product.name === "string" && isSafeWebUrl(product.url))
+    .map((product) => {
+      // Enrich local-catalog items (image, price, localized name) by id; web-discovered items use their own data.
+      const match = product.id ? products.find((item) => item.id === product.id) : null;
+      const localized = match ? localizedProduct(match) : null;
+      return {
+        brand: product.brand || match?.brand || "",
+        name: localized?.name || product.name,
+        category: localized?.category || "",
+        price: product.price || match?.price || "",
+        image: match?.image || product.image || "",
+        description: product.description || localized?.description || "",
+        url: product.url,
+      };
+    });
   if (validProducts.length === 0) return;
 
   const section = document.createElement("section");
@@ -349,6 +402,22 @@ function appendProductRecommendations(container, recommendations = []) {
     const card = document.createElement("article");
     card.className = "recommended-product-card";
 
+    if (product.image) {
+      const image = document.createElement("img");
+      image.className = "recommended-product-image";
+      image.src = product.image;
+      image.alt = "";
+      image.loading = "lazy";
+      card.appendChild(image);
+    }
+
+    if (product.brand) {
+      const brand = document.createElement("p");
+      brand.className = "recommended-product-brand";
+      brand.textContent = product.brand;
+      card.appendChild(brand);
+    }
+
     const title = document.createElement("h4");
     const titleLink = document.createElement("a");
     titleLink.href = product.url;
@@ -358,20 +427,25 @@ function appendProductRecommendations(container, recommendations = []) {
     title.appendChild(titleLink);
     card.appendChild(title);
 
+    if (product.category || product.price) {
+      const meta = document.createElement("p");
+      meta.className = "recommended-product-meta";
+      const category = document.createElement("span");
+      category.className = "recommended-product-category";
+      category.textContent = product.category;
+      const price = document.createElement("span");
+      price.className = "recommended-product-price";
+      price.textContent = product.price;
+      meta.append(category, price);
+      card.appendChild(meta);
+    }
+
     if (typeof product.description === "string" && product.description.trim()) {
       const description = document.createElement("p");
       description.className = "recommended-product-description";
       description.textContent = product.description;
       card.appendChild(description);
     }
-
-    const visibleUrl = document.createElement("a");
-    visibleUrl.className = "recommended-product-url";
-    visibleUrl.href = product.url;
-    visibleUrl.target = "_blank";
-    visibleUrl.rel = "noopener noreferrer";
-    visibleUrl.textContent = product.url;
-    card.appendChild(visibleUrl);
 
     const shopLink = document.createElement("a");
     shopLink.className = "recommended-product-action";
@@ -483,6 +557,23 @@ function selectedProductsForRequest() {
         description: localized.description,
       };
     });
+}
+
+// Full catalog sent to the Worker so the AI can recommend any product by id.
+function catalogForRequest() {
+  return products.map((product) => {
+    const localized = localizedProduct(product);
+    return {
+      id: product.id,
+      name: localized.name,
+      brand: product.brand,
+      category: localized.category,
+      area: product.area || "Skincare",
+      price: product.price || "",
+      description: localized.description,
+      url: brandSites[product.brand] || "",
+    };
+  });
 }
 
 function renderCategoryFilters() {
@@ -696,9 +787,12 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && !floatingChatPanel.hidden) setFloatingChatOpen(false);
 });
 
-floatingChatForm.addEventListener("submit", async (event) => {
+floatingChatForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  const question = floatingChatInput.value.trim();
+  return submitFloatingQuestion(floatingChatInput.value.trim());
+});
+
+async function submitFloatingQuestion(question) {
   if (!question) return;
 
   const selectedProducts = selectedProductsForRequest();
@@ -731,6 +825,7 @@ try {
     body: JSON.stringify({
       products: selectedProducts,
       conversation: floatingConversation,
+      catalog: catalogForRequest(),
     }),
   });
 
@@ -780,7 +875,42 @@ try {
   } finally {
     floatingChatMessages.scrollTop = floatingChatMessages.scrollHeight;
   }
+}
+
+function renderDiscoveryFilters() {
+  if (!discoveryBrandsEl || !discoveryCategoriesEl) return;
+  discoveryBrandsEl.innerHTML = discoveryBrands
+    .map((brand) => `<button class="discovery-chip${discoveryBrand === brand ? " active" : ""}" type="button" data-discovery-brand="${brand}" aria-pressed="${discoveryBrand === brand}">${brand}</button>`)
+    .join("");
+  discoveryCategoriesEl.innerHTML = discoveryCategories
+    .map((category) => `<button class="discovery-chip${discoveryCategory === category ? " active" : ""}" type="button" data-discovery-category="${category}" aria-pressed="${discoveryCategory === category}">${category}</button>`)
+    .join("");
+}
+
+function discoveryQuery() {
+  if (discoveryBrand && discoveryCategory) return `Show me ${discoveryCategory} from ${discoveryBrand}, with prices and working product links when available.`;
+  if (discoveryBrand) return `Show me popular products from ${discoveryBrand}, with prices and working product links when available.`;
+  if (discoveryCategory) return `Show me ${discoveryCategory} across your brands, with prices and working product links when available.`;
+  return "Recommend some popular beauty products with prices and working product links when available.";
+}
+
+discoveryBrandsEl?.addEventListener("click", (event) => {
+  const chip = event.target.closest("[data-discovery-brand]");
+  if (!chip) return;
+  const brand = chip.dataset.discoveryBrand;
+  discoveryBrand = discoveryBrand === brand ? "" : brand;
+  renderDiscoveryFilters();
 });
+
+discoveryCategoriesEl?.addEventListener("click", (event) => {
+  const chip = event.target.closest("[data-discovery-category]");
+  if (!chip) return;
+  const category = chip.dataset.discoveryCategory;
+  discoveryCategory = discoveryCategory === category ? "" : category;
+  renderDiscoveryFilters();
+});
+
+discoverySubmit?.addEventListener("click", () => submitFloatingQuestion(discoveryQuery()));
 
 grid.addEventListener("click", (event) => {
   const flipButton = event.target.closest("[data-flip-id]");
@@ -832,7 +962,7 @@ generateButton.addEventListener("click", async () => {
     const response = await fetch(routineApiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ products: selectedProducts, conversation }),
+      body: JSON.stringify({ products: selectedProducts, conversation, catalog: catalogForRequest() }),
     });
 
     const data = await readRoutineResponse(response, "Unable to generate a routine.");
@@ -893,7 +1023,7 @@ chatForm.addEventListener("submit", async (event) => {
     const response = await fetch(routineApiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ products: selectedProducts, conversation }),
+      body: JSON.stringify({ products: selectedProducts, conversation, catalog: catalogForRequest() }),
     });
 
     const data = await readRoutineResponse(response, "Unable to answer that question.");

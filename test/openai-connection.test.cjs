@@ -68,35 +68,58 @@ test("routine instructions separate skincare, haircare, and makeup", () => {
   assert.match(instructions, /preparation, complexion, color, eyes, and finishing/);
 
   const catalogInstructions = getRoutineInstructions([], true);
-  assert.match(catalogInstructions, /official L'Oréal, Maybelline, and CeraVe product catalogs/);
-  assert.match(catalogInstructions, /lorealparisusa\.com, maybelline\.com, cerave\.com/);
+  assert.match(catalogInstructions, /lorealparisusa\.com/);
+  assert.match(catalogInstructions, /theordinary\.com/);
+  assert.match(catalogInstructions, /elfcosmetics\.com/);
+  assert.match(catalogInstructions, /at least 10 relevant products/);
+  assert.match(catalogInstructions, /Never invent product names, prices, images, availability, or URLs/);
   assert.match(catalogInstructions, /availability may vary by country and retailer/);
+
+  const withCatalog = getRoutineInstructions([], true, [
+    { id: "cleanser-1", name: "CeraVe Hydrating Facial Cleanser", brand: "CeraVe", category: "Cleanser", price: "$15.99", description: "Gentle cleanser.", url: "https://www.cerave.com/" },
+  ]);
+  assert.match(withCatalog, /RECOMMEND: <catalog id or -> \| <brand> \| <product name> \| <price or -> \| <verified product url or -> \|/);
+  assert.match(withCatalog, /Local product catalog \(recommend these by their id\)/);
+  assert.match(withCatalog, /cleanser-1/);
 });
 
-test("Worker extracts only valid cited product recommendations", async () => {
+test("Worker builds catalog-backed recommendations and strips RECOMMEND lines", async () => {
   const worker = require("../src/index.ts").default;
-  const productUrl = "https://www.cerave.com/skincare/moisturizers/daily-moisturizing-lotion";
+  const catalogUrl = "https://www.cerave.com/skincare/cleansers/hydrating-facial-cleanser";
+  const ordinaryUrl = "https://theordinary.com/en-us/niacinamide-10-zinc-1-serum";
   global.fetch = async () => Response.json({
     output: [{
       type: "message",
       content: [{
         type: "output_text",
-        text: `[CeraVe Daily Moisturizing Lotion](${productUrl}): Lightweight daily hydration.\n[Fake Product](https://fake.example/product): Ignore this.`,
+        text: [
+          "Here are some picks for you.",
+          `RECOMMEND: cleanser-1 | CeraVe | CeraVe Hydrating Facial Cleanser | - | ${catalogUrl} | Gentle daily cleanser.`,
+          `RECOMMEND: - | The Ordinary | Niacinamide 10% + Zinc 1% | $6.00 | ${ordinaryUrl} | Helps with oil control.`,
+          "RECOMMEND: - | Fake Brand | Invented Product | $9.99 | https://fake.example/product | Not cited, must be dropped.",
+          "RECOMMEND: missing-id | CeraVe | Unknown | - | - | Not in catalog and no verified url.",
+        ].join("\n"),
         annotations: [
-          { type: "url_citation", url: productUrl, title: "CeraVe Daily Moisturizing Lotion" },
+          { type: "url_citation", url: catalogUrl, title: "CeraVe Hydrating Facial Cleanser" },
+          { type: "url_citation", url: ordinaryUrl, title: "The Ordinary Niacinamide" },
         ],
       }],
     }],
   });
-  const response = await worker.fetch(request(), { OPENAI_API_KEY: "test-key" });
-  const body = await response.json();
+  const body = JSON.stringify({
+    conversation: [{ role: "user", content: "What should I use?" }],
+    catalog: [
+      { id: "cleanser-1", name: "CeraVe Hydrating Facial Cleanser", brand: "CeraVe", category: "Cleanser", price: "$15.99", description: "Gentle cleanser.", url: "https://www.cerave.com/" },
+    ],
+  });
+  const response = await worker.fetch(new Request("https://example.com/api/routine", { method: "POST", body }), { OPENAI_API_KEY: "test-key" });
+  const result = await response.json();
   assert.equal(response.status, 200);
-  assert.deepEqual(body.products, [{
-    name: "CeraVe Daily Moisturizing Lotion",
-    description: "Lightweight daily hydration.",
-    url: productUrl,
-    sourceUrl: productUrl,
-  }]);
+  assert.equal(result.routine, "Here are some picks for you.");
+  assert.deepEqual(result.products, [
+    { id: "cleanser-1", brand: "CeraVe", name: "CeraVe Hydrating Facial Cleanser", price: "$15.99", description: "Gentle daily cleanser.", url: catalogUrl },
+    { brand: "The Ordinary", name: "Niacinamide 10% + Zinc 1%", price: "$6.00", description: "Helps with oil control.", url: ordinaryUrl },
+  ]);
 });
 
 test("Worker forwards the complete conversation without dropping old or long messages", async () => {
@@ -150,7 +173,7 @@ for (const [name, loadHandler] of [
       assert.match(input[0].content, /Mineral SPF 50 for daily facial protection/);
       assert.match(instructions, /Mineral SPF 50 for daily facial protection/);
       assert.match(instructions, /skincare, haircare, makeup/);
-      assert.match(instructions, /L'Oreal Paris, Maybelline, and CeraVe/);
+      assert.match(instructions, /product discovery assistant for these official brands/);
       return Response.json(openAiResult);
     };
     let response = await handler(request());

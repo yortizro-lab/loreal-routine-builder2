@@ -62,6 +62,7 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
     let payload: {
       products?: Array<{ name?: string; category?: string; area?: string; brand?: string; description?: string }>;
       conversation?: ChatMessage[];
+      catalog?: Array<{ id?: string; name?: string; category?: string; area?: string; brand?: string; price?: string; description?: string; url?: string }>;
     };
     try {
       payload = await request.json() as typeof payload;
@@ -76,6 +77,7 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
     }
     const products = Array.isArray(payload.products) ? payload.products : [];
     const conversation = Array.isArray(payload.conversation) ? payload.conversation : [];
+    const rawCatalog = Array.isArray(payload.catalog) ? payload.catalog : [];
 
     if (!products.length && !conversation.length) {
       return jsonResponse(400, { error: "Select at least one product." });
@@ -94,6 +96,21 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
         brand: typeof product.brand === "string" ? product.brand.slice(0, 50) : "L'Oréal",
         description: typeof product.description === "string" ? product.description.slice(0, 1_000) : "",
       }));
+
+    const catalog = rawCatalog
+      .filter((product) => product && typeof product.id === "string" && typeof product.name === "string")
+      .slice(0, 60)
+      .map((product) => ({
+        id: (product.id || "").slice(0, 100),
+        name: (product.name || "").slice(0, 200),
+        category: typeof product.category === "string" ? product.category.slice(0, 100) : "Product",
+        area: typeof product.area === "string" ? product.area.slice(0, 50) : "Skincare",
+        brand: typeof product.brand === "string" ? product.brand.slice(0, 50) : "L'Oréal",
+        price: typeof product.price === "string" ? product.price.slice(0, 50) : "",
+        description: typeof product.description === "string" ? product.description.slice(0, 1_000) : "",
+        url: typeof product.url === "string" && isWebUrl(product.url) ? product.url : "",
+      }));
+    const catalogById = new Map(catalog.map((product) => [product.id, product]));
 
     const priorMessages = conversation
       .filter((message) =>
@@ -131,7 +148,7 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
         body: JSON.stringify({
           model,
           ...(webSearch ? { tools: [{ type: "web_search" }] } : {}),
-          instructions: getRoutineInstructions(selectedProducts, webSearch),
+          instructions: getRoutineInstructions(selectedProducts, webSearch, catalog),
           input,
         }),
       });
@@ -211,20 +228,51 @@ async function generateRoutine(request: Request, env: Env): Promise<Response> {
     }
 
     const citedUrls = new Set(citations.map((citation) => citation.url));
-    const recommendedProducts: Array<{ name: string; description: string; url: string; sourceUrl: string }> = [];
-    const recommendationPattern = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\):?\s*([^\n]*)/g;
+    // The model lists recommendations as: "RECOMMEND: <id or -> | <brand> | <name> | <price or -> | <url or -> | <reason>".
+    // Local-catalog items (id present) are enriched from the catalog; web-discovered items must carry a
+    // web-search-verified (cited) URL so we never surface invented links, prices, or products.
+    const recommendedProducts: Array<{ id?: string; brand: string; name: string; price: string; description: string; url: string }> = [];
+    const recommendationPattern = /^[^\S\n]*RECOMMEND:\s*(.+?)\s*$/gim;
     for (const match of routine.matchAll(recommendationPattern)) {
-      const [, name, url, description] = match;
-      if (!isWebUrl(url) || !citedUrls.has(url) || recommendedProducts.some((product) => product.url === url)) continue;
+      const fields = match[1].split("|").map((field) => field.trim());
+      if (fields.length < 6) continue;
+      const [idField, brandField, nameField, priceField, urlField, ...reasonParts] = fields;
+      const reason = reasonParts.join(" | ").trim();
+      const id = idField && idField !== "-" ? idField.slice(0, 100) : "";
+      const catalogItem = id ? catalogById.get(id) : undefined;
+      const candidateUrl = urlField && urlField !== "-" ? urlField : "";
+      const verifiedUrl = isWebUrl(candidateUrl) && citedUrls.has(candidateUrl) ? candidateUrl : "";
+      const linePrice = priceField && priceField !== "-" ? priceField.slice(0, 50) : "";
+
+      let url: string;
+      let name: string;
+      let brand: string;
+      let price: string;
+      if (catalogItem) {
+        url = verifiedUrl || catalogItem.url;
+        name = catalogItem.name;
+        brand = catalogItem.brand;
+        price = linePrice || catalogItem.price;
+      } else {
+        url = verifiedUrl;
+        name = nameField.slice(0, 200);
+        brand = brandField === "-" ? "" : brandField.slice(0, 80);
+        price = linePrice;
+      }
+      if (!isWebUrl(url) || !name) continue;
+      if (recommendedProducts.some((item) => item.url === url || (id && item.id === id))) continue;
       recommendedProducts.push({
-        name: name.slice(0, 200),
-        description: description.slice(0, 500),
+        ...(id ? { id } : {}),
+        brand,
+        name,
+        price,
+        description: reason.slice(0, 500),
         url,
-        sourceUrl: url,
       });
     }
+    const cleanedRoutine = routine.replace(recommendationPattern, "").replace(/\n{3,}/g, "\n\n").trim();
 
-    return jsonResponse(200, { routine, products: recommendedProducts, citations });
+    return jsonResponse(200, { routine: cleanedRoutine || routine, products: recommendedProducts, citations });
   } catch {
     console.error("Unable to generate a routine.");
     return jsonResponse(500, { error: "Unable to generate a routine. Check Worker logs." });

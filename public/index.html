@@ -129,6 +129,12 @@
             <p class="floating-chat-message assistant" data-i18n="assistantGreeting">Hi! Ask me about skincare, haircare, makeup, or your selected routine.</p>
           </div>
         </div>
+        <div class="floating-chat-discovery" aria-label="Discover products">
+          <p class="discovery-label" data-i18n="discoverLabel">Discover products by brand and category</p>
+          <div id="discovery-brands" class="discovery-chips" aria-label="Filter by brand"></div>
+          <div id="discovery-categories" class="discovery-chips" aria-label="Filter by category"></div>
+          <button type="button" id="discovery-submit" class="discovery-submit" data-i18n="discoverFind">Find products</button>
+        </div>
         <form id="floating-chat-form" class="floating-chat-form">
           <label class="sr-only" for="floating-chat-input" data-i18n="assistantLabel">Ask the beauty assistant</label>
           <input id="floating-chat-input" type="text" autocomplete="off" placeholder="Ask a question..." data-i18n-placeholder="assistantPlaceholder" />
