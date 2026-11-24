@@ -862,7 +862,6 @@ const discoveryCategories = [
   "Exfoliants", "Eye creams", "Masks", "Foundations", "Concealers",
   "Mascara", "Lip products",
 ];
-let discoveryBrand = "";
 let discoveryCategory = "";
 
 const productTranslations = {
@@ -945,7 +944,6 @@ const floatingChatForm = document.querySelector("#floating-chat-form");
 const floatingChatInput = document.querySelector("#floating-chat-input");
 const floatingChatMessages = document.querySelector("#floating-chat-messages");
 const floatingChatRefresh = document.querySelector("#floating-chat-refresh");
-const discoveryBrandsEl = document.querySelector("#discovery-brands");
 const discoveryCategoriesEl = document.querySelector("#discovery-categories");
 const discoverySubmit = document.querySelector("#discovery-submit");
 let conversation = [];
@@ -971,7 +969,7 @@ const translations = {
     assistantGreeting: "Hi! Ask me about skincare, haircare, makeup, or your selected routine.",
     assistantLabel: "Ask the beauty assistant", assistantPlaceholder: "Ask a question...",
     chat: "Chat", refreshChat: "Refresh chat", sources: "Sources", thinking: "Thinking...", generating: "Generating...", shopProduct: "Shop Product",
-    discoverLabel: "Discover products by brand and category", discoverFind: "Find products",
+    discoverLabel: "Discover products by category", discoverFind: "Find products",
     selectedCount: (count) => `${count} selected`, noSelected: "No products selected",
     senderYou: "You", senderAssistant: "Assistant",
   },
@@ -987,7 +985,7 @@ const translations = {
     assistantGreeting: "¡Hola! Pregúntame sobre el cuidado de la piel, el cabello, el maquillaje o tu rutina seleccionada.",
     assistantLabel: "Pregunta al asistente de belleza", assistantPlaceholder: "Haz una pregunta...",
     chat: "Chat", refreshChat: "Actualizar chat", sources: "Fuentes", thinking: "Pensando...", generating: "Creando...", shopProduct: "Ver producto",
-    discoverLabel: "Descubre productos por marca y categoría", discoverFind: "Buscar productos",
+    discoverLabel: "Descubre productos por categoría", discoverFind: "Buscar productos",
     selectedCount: (count) => `${count} seleccionados`, noSelected: "No hay productos seleccionados",
     senderYou: "Tú", senderAssistant: "Asistente",
   },
@@ -1003,7 +1001,7 @@ const translations = {
     assistantGreeting: "你好！可以询问护肤、护发、化妆或您选择的流程。",
     assistantLabel: "询问美妆助手", assistantPlaceholder: "请输入问题...",
     chat: "聊天", refreshChat: "刷新聊天", sources: "来源", thinking: "正在思考...", generating: "正在生成...", shopProduct: "查看产品",
-    discoverLabel: "按品牌和类别发现产品", discoverFind: "查找产品",
+    discoverLabel: "按类别发现产品", discoverFind: "查找产品",
     selectedCount: (count) => `已选择 ${count} 件`, noSelected: "未选择任何产品",
     senderYou: "你", senderAssistant: "助手",
   },
@@ -1019,7 +1017,7 @@ const translations = {
     assistantGreeting: "Olá! Pergunte sobre cuidados com a pele, cabelo, maquiagem ou sua rotina selecionada.",
     assistantLabel: "Pergunte ao assistente de beleza", assistantPlaceholder: "Faça uma pergunta...",
     chat: "Chat", refreshChat: "Atualizar chat", sources: "Fontes", thinking: "Pensando...", generating: "Gerando...", shopProduct: "Ver produto",
-    discoverLabel: "Descubra produtos por marca e categoria", discoverFind: "Buscar produtos",
+    discoverLabel: "Descubra produtos por categoria", discoverFind: "Buscar produtos",
     selectedCount: (count) => `${count} selecionados`, noSelected: "Nenhum produto selecionado",
     senderYou: "Você", senderAssistant: "Assistente",
   },
@@ -1595,29 +1593,16 @@ try {
 }
 
 function renderDiscoveryFilters() {
-  if (!discoveryBrandsEl || !discoveryCategoriesEl) return;
-  discoveryBrandsEl.innerHTML = discoveryBrands
-    .map((brand) => `<button class="discovery-chip${discoveryBrand === brand ? " active" : ""}" type="button" data-discovery-brand="${brand}" aria-pressed="${discoveryBrand === brand}">${brand}</button>`)
-    .join("");
+  if (!discoveryCategoriesEl) return;
   discoveryCategoriesEl.innerHTML = discoveryCategories
     .map((category) => `<button class="discovery-chip${discoveryCategory === category ? " active" : ""}" type="button" data-discovery-category="${category}" aria-pressed="${discoveryCategory === category}">${category}</button>`)
     .join("");
 }
 
 function discoveryQuery() {
-  if (discoveryBrand && discoveryCategory) return `Show me ${discoveryCategory} from ${discoveryBrand}, with prices and working product links when available.`;
-  if (discoveryBrand) return `Show me popular products from ${discoveryBrand}, with prices and working product links when available.`;
   if (discoveryCategory) return `Show me ${discoveryCategory} across your brands, with prices and working product links when available.`;
   return "Recommend some popular beauty products with prices and working product links when available.";
 }
-
-discoveryBrandsEl?.addEventListener("click", (event) => {
-  const chip = event.target.closest("[data-discovery-brand]");
-  if (!chip) return;
-  const brand = chip.dataset.discoveryBrand;
-  discoveryBrand = discoveryBrand === brand ? "" : brand;
-  renderDiscoveryFilters();
-});
 
 discoveryCategoriesEl?.addEventListener("click", (event) => {
   const chip = event.target.closest("[data-discovery-category]");
