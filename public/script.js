@@ -8,7 +8,7 @@ const products = [
     category: "Serum",
     type: "Serums",
     price: "$29.99",
-    image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/007/124/937/7512/front_en.15.400.jpg",
     description: "A hydrating serum formulated with 1.5% pure hyaluronic acid to help plump the look of skin and reduce the appearance of fine lines.",
   },
   {
@@ -18,7 +18,7 @@ const products = [
     category: "Cleanser",
     type: "Cleansers",
     price: "$15.99",
-    image: "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/360/600/053/7675/front_en.3.400.jpg",
     description: "A fragrance-free, non-foaming facial cleanser with ceramides and hyaluronic acid that removes dirt and makeup while supporting the skin barrier.",
   },
   {
@@ -38,7 +38,7 @@ const products = [
     category: "Sunscreen",
     type: "Sunscreens",
     price: "$19.99",
-    image: "https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/360/600/051/4959/front_en.5.400.jpg",
     description: "A mineral broad-spectrum facial sunscreen with SPF 50, ceramides, and niacinamide that hydrates while helping protect skin from the sun.",
   },
   {
@@ -48,7 +48,7 @@ const products = [
     category: "Moisturizer",
     type: "Moisturizers",
     price: "$26.99",
-    image: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/360/052/345/6147/front_en.3.400.jpg",
     description: "A smoothing moisturizer that helps firm the feel of skin and visibly soften the appearance of wrinkles.",
   },
   {
@@ -109,7 +109,7 @@ const products = [
     type: "Foundations",
     price: "$8.99",
     area: "Makeup",
-    image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/360/053/132/4483/front_nl.13.400.jpg",
     description: "A lightweight liquid foundation for normal to oily skin that provides a natural matte finish and helps minimize the appearance of pores.",
   },
   {
@@ -120,7 +120,7 @@ const products = [
     type: "Mascara",
     price: "$12.99",
     area: "Makeup",
-    image: "https://images.unsplash.com/photo-1631214540553-ff044a3a67b5?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/000/003/016/6967/front_nl.10.400.jpg",
     description: "A lengthening mascara with a flexible brush designed to lift, define, and extend lashes.",
   },
   {
@@ -140,7 +140,7 @@ const products = [
     category: "Sunscreen",
     type: "Sunscreens",
     price: "$12.99",
-    image: "https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/006/260/095/3674/front_en.7.400.jpg",
     description: "A fast-absorbing broad-spectrum sunscreen with a non-greasy, dry-touch finish for everyday sun protection.",
   },
   {
@@ -150,7 +150,7 @@ const products = [
     category: "Cleanser",
     type: "Cleansers",
     price: "$16.99",
-    image: "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/333/787/554/5778/front_en.9.400.jpg",
     description: "A gentle cream cleanser with ceramides and niacinamide that removes impurities while respecting sensitive skin.",
   },
   {
@@ -180,7 +180,7 @@ const products = [
     category: "Toner",
     type: "Toners",
     price: "$9.00",
-    image: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/076/991/519/0977/front_en.21.400.jpg",
     description: "An exfoliating toning solution with 7% glycolic acid to improve skin radiance and visible clarity.",
   },
   {
@@ -191,7 +191,7 @@ const products = [
     type: "Foundations",
     price: "$17.99",
     area: "Makeup",
-    image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/080/089/715/7210/front_en.5.400.jpg",
     description: "A long-wearing, full-coverage liquid foundation with a natural matte finish that lasts all day.",
   },
   {
@@ -202,7 +202,7 @@ const products = [
     type: "Lip products",
     price: "$5.99",
     area: "Makeup",
-    image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/080/089/781/8586/front_nl.6.400.jpg",
     description: "A buttery-soft lip gloss that delivers sheer-to-medium color with a non-sticky, hydrating shine.",
   },
   {
@@ -232,7 +232,7 @@ const products = [
     category: "Cleanser",
     type: "Cleansers",
     price: "$8.99",
-    image: "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/060/308/407/8028/front_en.3.400.jpg",
     description: "A no-rinse micellar water that gently lifts away makeup and impurities in one step.",
   },
   {
@@ -253,7 +253,7 @@ const products = [
     type: "Concealers",
     price: "$7.00",
     area: "Makeup",
-    image: "https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/060/933/284/8238/front_nl.5.400.jpg",
     description: "A full-coverage, crease-resistant concealer that covers dark circles and blemishes with a matte finish.",
   },
   {
@@ -263,7 +263,7 @@ const products = [
     category: "Moisturizer",
     type: "Moisturizers",
     price: "$13.00",
-    image: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/060/933/282/8292/front_nl.8.400.jpg",
     description: "A lightweight daily face cream with hyaluronic acid and peptides for soft, hydrated skin.",
   },
 
@@ -337,7 +337,7 @@ const products = [
     type: "Concealers",
     price: "$13.99",
     area: "Makeup",
-    image: "https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/007/124/938/2417/front_fr.3.400.jpg",
     description: "A full-coverage, waterproof concealer that covers dark circles and blemishes and shapes the face.",
   },
   {
@@ -371,7 +371,7 @@ const products = [
     category: "Moisturizer",
     type: "Moisturizers",
     price: "$16.99",
-    image: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/360/600/053/7743/front_en.55.400.jpg",
     description: "A lightweight, fragrance-free lotion with ceramides and hyaluronic acid for all-day hydration.",
   },
   {
@@ -414,7 +414,7 @@ const products = [
     type: "Concealers",
     price: "$9.99",
     area: "Makeup",
-    image: "https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/360/053/073/3842/front_en.3.400.jpg",
     description: "A medium-to-full coverage concealer with a cushion applicator that erases dark circles and fine lines.",
   },
   {
@@ -425,7 +425,7 @@ const products = [
     type: "Lip products",
     price: "$9.49",
     area: "Makeup",
-    image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/004/155/449/6925/front_en.4.400.jpg",
     description: "A long-wearing liquid lipstick with an intense matte finish that lasts up to 16 hours.",
   },
 
@@ -437,7 +437,7 @@ const products = [
     category: "Cleanser",
     type: "Cleansers",
     price: "$9.49",
-    image: "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/088/777/711/1111/front_xx.7.400.jpg",
     description: "A salicylic acid face wash that cleanses pores and helps treat and prevent breakouts.",
   },
   {
@@ -457,7 +457,7 @@ const products = [
     category: "Toner",
     type: "Toners",
     price: "$8.99",
-    image: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/007/050/102/7004/front_en.4.400.jpg",
     description: "A gentle, alcohol-free toner that removes residue and refreshes skin without over-drying.",
   },
   {
@@ -499,7 +499,7 @@ const products = [
     category: "Moisturizer",
     type: "Moisturizers",
     price: "$21.99",
-    image: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/333/787/554/5846/front_en.3.400.jpg",
     description: "An oil-free moisturizer with ceramides and niacinamide that restores the skin barrier for 48 hours.",
   },
   {
@@ -561,7 +561,7 @@ const products = [
     category: "Moisturizer",
     type: "Moisturizers",
     price: "$8.90",
-    image: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/076/991/519/0731/front_en.3.400.jpg",
     description: "A non-greasy moisturizer with amino acids and hyaluronic acid for everyday surface hydration.",
   },
   {
@@ -581,7 +581,7 @@ const products = [
     category: "Exfoliant",
     type: "Exfoliants",
     price: "$9.50",
-    image: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/076/991/519/5606/front_en.6.400.jpg",
     description: "A 10-minute exfoliating facial with alpha and beta hydroxy acids for brighter, smoother skin.",
   },
   {
@@ -591,7 +591,7 @@ const products = [
     category: "Eye cream",
     type: "Eye creams",
     price: "$8.90",
-    image: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=400&q=85",
+    image: "https://images.openbeautyfacts.org/images/products/076/991/519/0670/front_en.21.400.jpg",
     description: "A lightweight eye serum with caffeine to reduce the look of puffiness and dark circles.",
   },
   {
